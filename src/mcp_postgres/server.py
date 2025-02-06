@@ -2,6 +2,7 @@
 
 import asyncio
 import sys
+import argparse
 from typing import Optional
 from contextlib import asynccontextmanager
 
@@ -204,17 +205,16 @@ class PostgresServer:
             self.log("info", "关闭数据库连接池")
             self.pool.closeall()
 
-async def main():
-    """主入口函数"""
-    if len(sys.argv) < 2:
-        print("用法: python -m mcp_postgres <database_url> [local_host]", file=sys.stderr)
-        sys.exit(1)
+async def run_server():
+    """服务器实际运行逻辑"""
+    parser = argparse.ArgumentParser(description='MCP PostgreSQL Server')
+    parser.add_argument('database_url', help='数据库连接URL')
+    parser.add_argument('local_host', nargs='?', help='本地主机地址', default=None)
 
-    database_url = sys.argv[1]
-    local_host = sys.argv[2] if len(sys.argv) > 2 else None
+    args = parser.parse_args()
 
     try:
-        config = PostgresConfig.from_url(database_url, local_host)
+        config = PostgresConfig.from_url(args.database_url, args.local_host)
         server = PostgresServer(config)
         await server.run()
     except KeyboardInterrupt:
@@ -223,5 +223,9 @@ async def main():
         if 'server' in locals():
             server.cleanup()
 
+def main():
+    """命令行入口函数"""
+    asyncio.run(run_server())
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
