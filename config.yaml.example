@@ -1,6 +1,16 @@
-database:
-  host: localhost
-  port: 5432
-  dbname: database
-  user: example
-  password: password
+databases:
+  dev-db:
+    host: dev.example.com
+    port: 5432
+    dbname: dev_db
+    user: dev_user
+    password: dev_pass
+  
+  test-db:
+    host: test.example.com
+    port: 5432
+    dbname: test_db
+    user: test_user
+    password: test_pass
+
+default: dev-db  # 可选，指定默认数据库
