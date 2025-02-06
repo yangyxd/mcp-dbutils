@@ -208,13 +208,20 @@ class PostgresServer:
 async def run_server():
     """服务器实际运行逻辑"""
     parser = argparse.ArgumentParser(description='MCP PostgreSQL Server')
-    parser.add_argument('database_url', help='数据库连接URL')
-    parser.add_argument('local_host', nargs='?', help='本地主机地址', default=None)
+    parser.add_argument('--config', help='YAML配置文件路径')
+    parser.add_argument('--database-url', help='数据库连接URL（可选，优先使用配置文件）')
+    parser.add_argument('--local-host', help='本地主机地址', default=None)
 
     args = parser.parse_args()
 
     try:
-        config = PostgresConfig.from_url(args.database_url, args.local_host)
+        if args.config:
+            config = PostgresConfig.from_yaml(args.config, args.local_host)
+        elif args.database_url:
+            config = PostgresConfig.from_url(args.database_url, args.local_host)
+        else:
+            raise ValueError("必须提供配置文件路径或数据库URL")
+
         server = PostgresServer(config)
         await server.run()
     except KeyboardInterrupt:
