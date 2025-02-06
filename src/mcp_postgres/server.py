@@ -23,7 +23,8 @@ class PostgresServer:
         # 创建连接池
         try:
             conn_params = config.get_connection_params()
-            self.log("info", f"正在连接数据库，参数: {conn_params}")
+            masked_conn_params = config.get_masked_connection_info()
+            self.log("debug", f"正在连接数据库，参数: {masked_conn_params}")
 
             # 测试连接
             test_conn = psycopg2.connect(**conn_params)

@@ -56,3 +56,12 @@ class PostgresConfig:
             'port': self.port
         }
         return {k: v for k, v in params.items() if v}
+
+    def get_masked_connection_info(self) -> dict:
+        """返回脱敏的连接信息，用于日志输出"""
+        return {
+            'dbname': self.dbname,
+            'host': self.local_host or self.host,
+            'port': self.port
+            # 完全移除 user 和 password
+        }
