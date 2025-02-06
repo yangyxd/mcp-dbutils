@@ -18,20 +18,28 @@ class PostgresServer:
     def __init__(self, config: PostgresConfig):
         self.config = config
         self.log = create_logger("postgres", config.debug)
-        
+
         # 创建连接池
         try:
-            self.log("info", f"正在连接数据库: {config.host}:{config.port}/{config.database}")
-            self.pool = SimpleConnectionPool(1, 5, **config.get_connection_params())
-            self.log("info", "数据库连接成功")
+            conn_params = config.get_connection_params()
+            self.log("info", f"正在连接数据库，参数: {conn_params}")
+
+            # 测试连接
+            test_conn = psycopg2.connect(**conn_params)
+            test_conn.close()
+            self.log("info", "测试连接成功")
+
+            # 创建连接池
+            self.pool = SimpleConnectionPool(1, 5, **conn_params)
+            self.log("info", "数据库连接池创建成功")
         except psycopg2.Error as e:
             self.log("error", f"数据库连接失败: {str(e)}")
             raise
-            
+
         # 初始化MCP服务器
         self.server = Server("postgres-server")
         self._setup_handlers()
-        
+
     def _setup_handlers(self):
         @self.server.list_resources()
         async def handle_list_resources() -> list[types.Resource]:
@@ -50,7 +58,7 @@ class PostgresServer:
                         WHERE table_schema = 'public'
                     """)
                     tables = cur.fetchall()
-                    
+
                     return [
                         types.Resource(
                             uri=f"postgres://{self.config.host}/{table[0]}/schema",
@@ -64,7 +72,7 @@ class PostgresServer:
                 raise
             finally:
                 self.pool.putconn(conn)
-        
+
         @self.server.read_resource()
         async def handle_read_resource(uri: str) -> str:
             """读取表结构信息"""
@@ -87,7 +95,7 @@ class PostgresServer:
                         ORDER BY ordinal_position
                     """, (table_name,))
                     columns = cur.fetchall()
-                    
+
                     # 获取约束信息
                     cur.execute("""
                         SELECT
@@ -98,7 +106,7 @@ class PostgresServer:
                         WHERE t.relname = %s
                     """, (table_name,))
                     constraints = cur.fetchall()
-                    
+
                     return str({
                         'columns': [{
                             'name': col[0],
@@ -142,17 +150,17 @@ class PostgresServer:
             """处理工具调用"""
             if name != "query":
                 raise ValueError(f"未知工具: {name}")
-            
+
             sql = arguments.get("sql", "").strip()
             if not sql:
                 raise ValueError("SQL查询不能为空")
-            
+
             # 仅允许SELECT语句
             if not sql.lower().startswith("select"):
                 raise ValueError("仅支持SELECT查询")
-                
+
             self.log("info", f"执行查询: {sql}")
-            
+
             try:
                 conn = self.pool.getconn()
                 with conn.cursor() as cur:
@@ -162,14 +170,14 @@ class PostgresServer:
                         cur.execute(sql)
                         results = cur.fetchall()
                         columns = [desc[0] for desc in cur.description]
-                        
+
                         formatted_results = [dict(zip(columns, row)) for row in results]
                         result_text = str({
                             'columns': columns,
                             'rows': formatted_results,
                             'row_count': len(results)
                         })
-                        
+
                         self.log("info", f"查询完成，返回{len(results)}行结果")
                         return [types.TextContent(type="text", text=result_text)]
                     finally:
@@ -195,7 +203,7 @@ class PostgresServer:
         if hasattr(self, 'pool'):
             self.log("info", "关闭数据库连接池")
             self.pool.closeall()
-            
+
 async def main():
     """主入口函数"""
     if len(sys.argv) < 2:
@@ -204,7 +212,7 @@ async def main():
 
     database_url = sys.argv[1]
     local_host = sys.argv[2] if len(sys.argv) > 2 else None
-    
+
     try:
         config = PostgresConfig.from_url(database_url, local_host)
         server = PostgresServer(config)

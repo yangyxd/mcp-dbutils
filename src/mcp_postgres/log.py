@@ -22,10 +22,10 @@ def create_logger(name: str, is_debug: bool = False) -> Callable:
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         log_message = f"[{timestamp}] [{name}] [{level}] {message}"
-        
+
         # 始终输出到stderr
         print(log_message, file=sys.stderr, flush=True)
-        
+
         # 如果提供了notify函数，同时发送MCP通知
         if notify:
             notify(level=level, data=message)
