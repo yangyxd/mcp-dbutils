@@ -213,7 +213,7 @@ async def run_server():
     parser.add_argument('--config', help='YAML配置文件路径')
     parser.add_argument('--database-url', help='数据库连接URL（可选，优先使用配置文件）')
     parser.add_argument('--local-host', help='本地主机地址', default=None)
-    parser.add_argument('--db-name', help='要使用的数据库配置名称')  # 移除了required=True
+    parser.add_argument('--db-name', help='要使用的数据库配置名称')
 
     args = parser.parse_args()
     logger = create_logger("postgres", False)
@@ -234,11 +234,11 @@ async def run_server():
                     # 测试连接
                     test_conn = psycopg2.connect(**conn_params)
                     test_conn.close()
-                    logger.info(f"数据库 {db_name} 连接成功")
+                    logger("info", f"数据库 {db_name} 连接成功")
                     success = True
                     available_dbs.append(db_name)
                 except Exception as e:
-                    logger.warning(f"数据库 {db_name} 连接失败: {str(e)}")
+                    logger("warning", f"数据库 {db_name} 连接失败: {str(e)}")
 
             if not success:
                 raise ConnectionError("所有数据库连接均失败")
