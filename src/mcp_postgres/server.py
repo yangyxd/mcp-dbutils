@@ -2,6 +2,7 @@
 
 import asyncio
 import sys
+import yaml
 import argparse
 from typing import Optional
 from contextlib import asynccontextmanager
@@ -212,37 +213,40 @@ async def run_server():
     parser.add_argument('--config', help='YAML配置文件路径')
     parser.add_argument('--database-url', help='数据库连接URL（可选，优先使用配置文件）')
     parser.add_argument('--local-host', help='本地主机地址', default=None)
-    parser.add_argument('--db-name', help='要使用的数据库配置名称', required=True)
+    parser.add_argument('--db-name', help='要使用的数据库配置名称')  # 移除了required=True
 
     args = parser.parse_args()
     logger = create_logger("postgres", False)
 
     try:
         if args.config:
-            # 检查所有数据库连接
+            # 首先检查所有数据库连接
             with open(args.config, 'r') as f:
                 config_data = yaml.safe_load(f)
 
             success = False
+            available_dbs = []
             for db_name in config_data['databases'].keys():
                 try:
                     test_config = PostgresConfig.from_yaml(args.config, db_name, args.local_host)
                     conn_params = test_config.get_connection_params()
-                    masked_params = test_config.get_masked_connection_info()
 
                     # 测试连接
                     test_conn = psycopg2.connect(**conn_params)
                     test_conn.close()
                     logger.info(f"数据库 {db_name} 连接成功")
                     success = True
+                    available_dbs.append(db_name)
                 except Exception as e:
                     logger.warning(f"数据库 {db_name} 连接失败: {str(e)}")
 
             if not success:
                 raise ConnectionError("所有数据库连接均失败")
 
-            # 使用指定的数据库配置创建服务器
-            config = PostgresConfig.from_yaml(args.config, args.db_name, args.local_host)
+            # 如果没有指定数据库名称，使用第一个可用的数据库
+            selected_db = args.db_name if args.db_name else available_dbs[0]
+            config = PostgresConfig.from_yaml(args.config, selected_db, args.local_host)
+
         elif args.database_url:
             config = PostgresConfig.from_url(args.database_url, args.local_host)
         else:
