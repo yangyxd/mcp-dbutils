@@ -17,25 +17,23 @@ class PostgresConfig:
     debug: bool = False
 
     @classmethod
-    def from_yaml(cls, yaml_path: str, db_name: Optional[str] = None, local_host: Optional[str] = None) -> 'PostgresConfig':
+    def from_yaml(cls, yaml_path: str, db_name: str, local_host: Optional[str] = None) -> 'PostgresConfig':
         """从YAML文件创建配置
 
         Args:
             yaml_path: YAML配置文件路径
-            db_name: 要使用的数据库配置名称
+            db_name: 要使用的数据库配置名称（必填）
             local_host: 可选的本地主机地址
         """
         with open(yaml_path, 'r') as f:
             config = yaml.safe_load(f)
 
         if not db_name:
-            # 如果未指定数据库名称，检查是否有默认值
-            db_name = config.get('default')
-            if not db_name:
-                raise ValueError("必须指定数据库名称或在配置中设置默认值")
+            raise ValueError("必须指定数据库名称")
 
         if db_name not in config['databases']:
-            raise ValueError(f"未找到数据库配置: {db_name}")
+            available_dbs = list(config['databases'].keys())
+            raise ValueError(f"未找到数据库配置: {db_name}。可用的数据库配置: {available_dbs}")
 
         db_config = config['databases'][db_name]
         return cls(

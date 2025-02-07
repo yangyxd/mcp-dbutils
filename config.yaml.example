@@ -8,9 +8,15 @@ databases:
   
   test-db:
     host: test.example.com
-    port: 5432
+    port: 5433
     dbname: test_db
     user: test_user
     password: test_pass
 
-default: dev-db  # 可选，指定默认数据库
+  prod-db:
+    host: prod.example.com
+    port: 5434
+    dbname: prod_db
+    user: prod_user
+    password: prod_pass
+
