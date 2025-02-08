@@ -1,6 +1,7 @@
 """SQLite MCP server implementation"""
 
 import sqlite3
+from pathlib import Path
 from contextlib import closing
 from typing import Optional, List
 import mcp.types as types
@@ -14,7 +15,7 @@ class SqliteServer(DatabaseServer):
         """初始化 SQLite 服务器
 
         Args:
-        config: SQLite 配置
+            config: SQLite 配置
         """
         super().__init__("sqlite-server", config.debug)
         self.config = config
