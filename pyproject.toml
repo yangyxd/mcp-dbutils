@@ -1,7 +1,7 @@
 [project]
-name = "mcp-postgres"
+name = "mcp-dbutils"
 version = "0.1.0"
-description = "MCP PostgreSQL服务"
+description = "MCP Database Utilities Service"
 readme = "README.md"
 dependencies = [
       "mcp>=1.2.1",
@@ -16,4 +16,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-mcp-postgres = "mcp_postgres:main"
+mcp-dbutils = "mcp_dbutils:main"
