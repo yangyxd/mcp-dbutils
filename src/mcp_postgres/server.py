@@ -72,7 +72,8 @@ class PostgresServer:
                         ) for table in tables
                     ]
             except psycopg2.Error as e:
-                self.log("error", f"获取表列表失败: {str(e)}")
+                error_msg = f"获取表列表失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+                self.log("error", error_msg)
                 raise
             finally:
                 self.pool.putconn(conn)
@@ -124,7 +125,8 @@ class PostgresServer:
                         } for con in constraints]
                     })
             except psycopg2.Error as e:
-                self.log("error", f"读取表结构失败: {str(e)}")
+                error_msg = f"读取表结构失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+                self.log("error", error_msg)
                 raise
             finally:
                 self.pool.putconn(conn)
@@ -207,7 +209,10 @@ class PostgresServer:
                     finally:
                         cur.execute("ROLLBACK")
             except Exception as e:
-                error_msg = f"查询执行失败: {str(e)}"
+                if isinstance(e, psycopg2.Error):
+                    error_msg = f"查询执行失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+                else:
+                    error_msg = f"查询执行失败: {str(e)}"
                 self.log("error", error_msg)
                 return [types.TextContent(type="text", text=error_msg)]
             finally:
