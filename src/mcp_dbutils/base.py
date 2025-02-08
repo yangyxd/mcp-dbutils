@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 from mcp.server import Server, NotificationOptions
+import mcp.server.stdio
 import mcp.types as types
 
 class DatabaseServer(ABC):
@@ -65,10 +66,10 @@ class DatabaseServer(ABC):
     async def run(self):
         """运行服务器"""
         try:
-            async with self.server.create_stdio_transport() as transport:
+            async with mcp.server.stdio.stdio_server() as streams:
                 await self.server.run(
-                    transport.read_stream,
-                    transport.write_stream,
+                    streams[0],
+                    streams[1],
                     self.server.create_initialization_options()
                 )
         finally:
