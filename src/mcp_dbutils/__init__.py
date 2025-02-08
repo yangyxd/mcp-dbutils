@@ -5,6 +5,32 @@ import argparse
 import sys
 from pathlib import Path
 
+import yaml
+
+def get_database_type(yaml_path: str, db_name: str) -> str:
+    """从配置文件中获取数据库类型"""
+    try:
+        with open(yaml_path, 'r') as f:
+            config = yaml.safe_load(f)
+            if not config or 'databases' not in config:
+                raise ValueError("配置文件必须包含 databases 配置")
+            if db_name not in config['databases']:
+                available_dbs = list(config['databases'].keys())
+                raise ValueError(f"未找到数据库配置: {db_name}。可用的数据库配置: {available_dbs}")
+
+            db_config = config['databases'][db_name]
+
+            # 如果存在 db_path，认为是 SQLite
+            if 'db_path' in db_config:
+                return 'sqlite'
+            # 如果存在 dbname 或 host，认为是 PostgreSQL
+            elif 'dbname' in db_config or 'host' in db_config:
+                return 'postgres'
+            else:
+                raise ValueError(f"无法确定数据库类型，配置中缺少必要参数")
+    except Exception as e:
+        raise ValueError(f"读取配置文件失败: {str(e)}")
+
 def get_database_server(db_type: str, **kwargs):
     """根据数据库类型返回相应的服务器实例"""
     if db_type == 'postgres':
@@ -19,34 +45,30 @@ def get_database_server(db_type: str, **kwargs):
 async def run_server():
     """服务器运行逻辑"""
     parser = argparse.ArgumentParser(description='MCP Database Server')
-    parser.add_argument('--type', choices=['postgres', 'sqlite'], required=True,
-                       help='Database type')
-
-    # PostgreSQL specific arguments
-    postgres_group = parser.add_argument_group('PostgreSQL options')
-    postgres_group.add_argument('--config', required=True, help='YAML配置文件路径')
-    postgres_group.add_argument('--local-host', help='本地主机地址')
-    postgres_group.add_argument('--database', help='要使用的数据库配置名称')
-
-    # SQLite specific arguments
-    sqlite_group = parser.add_argument_group('SQLite options')
-    sqlite_group.add_argument('--db-path', help='SQLite数据库文件路径')
+    parser.add_argument('--config', required=True, help='YAML配置文件路径')
+    parser.add_argument('--database', required=True, help='要使用的数据库配置名称')
+    parser.add_argument('--local-host', help='本地主机地址')
 
     args = parser.parse_args()
 
     try:
+        # 从配置文件确定数据库类型
+        db_type = get_database_type(args.config, args.database)
+        print(f"检测到数据库类型: {db_type}", file=sys.stderr)
+
+        # 根据类型创建相应的配置和服务器
         server_kwargs = {}
-        if args.type == 'postgres':
+        if db_type == 'postgres':
             from .postgres.config import PostgresConfig
             config = PostgresConfig.from_yaml(args.config, args.database, args.local_host)
             server_kwargs['config'] = config
             server_kwargs['config_path'] = args.config
         else:  # sqlite
-            if not args.db_path:
-                parser.error('SQLite requires --db-path')
-            server_kwargs['db_path'] = args.db_path
+            from .sqlite.config import SqliteConfig
+            config = SqliteConfig.from_yaml(args.config, args.database)
+            server_kwargs['config'] = config
 
-        server = get_database_server(args.type, **server_kwargs)
+        server = get_database_server(db_type, **server_kwargs)
         await server.run()
 
     except KeyboardInterrupt:

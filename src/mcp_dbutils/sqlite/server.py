@@ -10,15 +10,15 @@ from ..log import create_logger
 from .config import SqliteConfig
 
 class SqliteServer(DatabaseServer):
-    def __init__(self, db_path: str):
+    def __init__(self, config: SqliteConfig):
         """初始化 SQLite 服务器
 
         Args:
-            db_path: 数据库文件路径
+        config: SQLite 配置
         """
-        self.config = SqliteConfig(db_path=db_path)
-        super().__init__("sqlite-server", self.config.debug)
-        self.log = create_logger("sqlite", self.config.debug)
+        super().__init__("sqlite-server", config.debug)
+        self.config = config
+        self.log = create_logger("sqlite", config.debug)
 
         # 确保数据库目录存在
         db_file = Path(self.config.absolute_path)
