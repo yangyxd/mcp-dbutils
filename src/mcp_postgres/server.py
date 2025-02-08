@@ -204,7 +204,7 @@ class PostgresServer:
         @self.server.call_tool()
         async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
             """处理工具调用"""
-            if name != "query":
+            if name != "query_db":
                 raise ValueError(f"未知工具: {name}")
 
             sql = arguments.get("sql", "").strip()
