@@ -27,7 +27,8 @@ class SqliteServer(DatabaseServer):
         # 测试连接
         try:
             self.log("debug", f"正在连接数据库: {self.config.get_masked_connection_info()}")
-            with closing(sqlite3.connect(self.config.absolute_path)) as conn:
+            connection_params = self.config.get_connection_params()
+            with closing(sqlite3.connect(**connection_params)) as conn:
                 conn.row_factory = sqlite3.Row
             self.log("info", "数据库连接测试成功")
         except sqlite3.Error as e:
@@ -36,7 +37,8 @@ class SqliteServer(DatabaseServer):
 
     def _get_connection(self):
         """获取数据库连接"""
-        conn = sqlite3.connect(self.config.absolute_path)
+        connection_params = self.config.get_connection_params()
+        conn = sqlite3.connect(**connection_params)
         conn.row_factory = sqlite3.Row
         return conn
 

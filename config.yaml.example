@@ -1,21 +1,15 @@
 databases:
   dev-db:
-    host: dev.example.com
-    port: 5432
-    dbname: dev_db
-    user: dev_user
-    password: dev_pass
+    db_path: /Users/donghao/dev/workspace/playground.db
+    password: 
   
   test-db:
-    host: test.example.com
-    port: 5433
-    dbname: test_db
-    user: test_user
+    db_path: /Users/donghao/dev/workspace/playground.db
     password: test_pass
 
   prod-db:
     host: prod.example.com
-    port: 5434
+    port: 5432
     dbname: prod_db
     user: prod_user
     password: prod_pass
