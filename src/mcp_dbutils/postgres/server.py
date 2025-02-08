@@ -1,304 +1,196 @@
-"""PostgreSQL MCP 服务器实现"""
-
-import asyncio
-import sys
-import yaml
-import argparse
-from typing import Optional, Tuple
-from contextlib import asynccontextmanager
-
+"""PostgreSQL MCP server implementation"""
 import psycopg2
 from psycopg2.pool import SimpleConnectionPool
-from mcp.server import Server, NotificationOptions
+from typing import Optional, List
 import mcp.types as types
-from mcp.server.stdio import stdio_server
-
+from ..base import DatabaseServer
+from ..log import create_logger
 from .config import PostgresConfig
-from .log import create_logger
-
-class PostgresServer:
+class PostgresServer(DatabaseServer):
     def __init__(self, config: PostgresConfig, config_path: Optional[str] = None):
+        """初始化PostgreSQL服务器
+        Args:
+            config: 数据库配置
+            config_path: 配置文件路径(可选)
+        """
+        super().__init__("postgres-server", config.debug)
         self.config = config
         self.config_path = config_path
         self.log = create_logger("postgres", config.debug)
-
         # 创建连接池
         try:
             conn_params = config.get_connection_params()
-            masked_conn_params = config.get_masked_connection_info()
-            self.log("debug", f"正在连接数据库，参数: {masked_conn_params}")
-
+            masked_params = config.get_masked_connection_info()
+            self.log("debug", f"正在连接数据库，参数: {masked_params}")
             # 测试连接
             test_conn = psycopg2.connect(**conn_params)
             test_conn.close()
             self.log("info", "测试连接成功")
-
             # 创建连接池
             self.pool = SimpleConnectionPool(1, 5, **conn_params)
             self.log("info", "数据库连接池创建成功")
         except psycopg2.Error as e:
-            self.log("error", f"数据库连接失败: {str(e)}")
+            self.log("error", f"数据库连接失败: [Code: {e.pgcode}] {e.pgerror or str(e)}")
             raise
-
-        # 初始化MCP服务器
-        self.server = Server("postgres-server")
-        self._setup_handlers()
-
-    def _setup_handlers(self):
-        @self.server.list_resources()
-        async def handle_list_resources() -> list[types.Resource]:
-            """列出所有表资源"""
-            try:
-                conn = self.pool.getconn()
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT 
-                            table_name,
-                            obj_description(
-                                (quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass,
-                                'pg_class'
-                            ) as description
-                        FROM information_schema.tables 
-                        WHERE table_schema = 'public'
-                    """)
-                    tables = cur.fetchall()
-
-                    return [
-                        types.Resource(
-                            uri=f"postgres://{self.config.host}/{table[0]}/schema",
-                            name=f"{table[0]} schema",
-                            description=table[1] if table[1] else None,
-                            mimeType="application/json"
-                        ) for table in tables
-                    ]
-            except psycopg2.Error as e:
-                error_msg = f"获取表列表失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-                self.log("error", error_msg)
-                raise
-            finally:
-                self.pool.putconn(conn)
-
-        @self.server.read_resource()
-        async def handle_read_resource(uri: str) -> str:
-            """读取表结构信息"""
-            try:
-                table_name = uri.split('/')[-2]
-                conn = self.pool.getconn()
-                with conn.cursor() as cur:
-                    # 获取列信息
-                    cur.execute("""
-                        SELECT 
-                            column_name,
-                            data_type,
-                            is_nullable,
-                            col_description(
-                                (quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass,
-                                ordinal_position
-                            ) as description
-                        FROM information_schema.columns 
-                        WHERE table_name = %s
-                        ORDER BY ordinal_position
-                    """, (table_name,))
-                    columns = cur.fetchall()
-
-                    # 获取约束信息
-                    cur.execute("""
-                        SELECT
-                            conname as constraint_name,
-                            contype as constraint_type
-                        FROM pg_constraint c
-                        JOIN pg_class t ON c.conrelid = t.oid
-                        WHERE t.relname = %s
-                    """, (table_name,))
-                    constraints = cur.fetchall()
-
-                    return str({
-                        'columns': [{
-                            'name': col[0],
-                            'type': col[1],
-                            'nullable': col[2] == 'YES',
-                            'description': col[3]
-                        } for col in columns],
-                        'constraints': [{
-                            'name': con[0],
-                            'type': con[1]
-                        } for con in constraints]
-                    })
-            except psycopg2.Error as e:
-                error_msg = f"读取表结构失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-                self.log("error", error_msg)
-                raise
-            finally:
-                self.pool.putconn(conn)
-
-        @self.server.list_tools()
-        async def handle_list_tools() -> list[types.Tool]:
-            """列出可用工具"""
-            return [
-                types.Tool(
-                    name="query",
-                    description="执行只读SQL查询",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "database": {
-                                "type": "string",
-                                "description": "数据库配置名称（可选）"
-                            },
-                            "sql": {
-                                "type": "string",
-                                "description": "SQL查询语句（仅支持SELECT）"
-                            }
+    async def list_resources(self) -> list[types.Resource]:
+        """列出所有表资源"""
+        try:
+            conn = self.pool.getconn()
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT
+                        table_name,
+                        obj_description(
+                            (quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass,
+                            'pg_class'
+                        ) as description
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public'
+                """)
+                tables = cur.fetchall()
+                return [
+                    types.Resource(
+                        uri=f"postgres://{self.config.host}/{table[0]}/schema",
+                        name=f"{table[0]} schema",
+                        description=table[1] if table[1] else None,
+                        mimeType="application/json"
+                    ) for table in tables
+                ]
+        except psycopg2.Error as e:
+            error_msg = f"获取表列表失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            self.log("error", error_msg)
+            raise
+        finally:
+            self.pool.putconn(conn)
+    async def read_resource(self, uri: str) -> str:
+        """读取表结构信息"""
+        try:
+            table_name = uri.split('/')[-2]
+            conn = self.pool.getconn()
+            with conn.cursor() as cur:
+                # 获取列信息
+                cur.execute("""
+                    SELECT
+                        column_name,
+                        data_type,
+                        is_nullable,
+                        col_description(
+                            (quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass,
+                            ordinal_position
+                        ) as description
+                    FROM information_schema.columns
+                    WHERE table_name = %s
+                    ORDER BY ordinal_position
+                """, (table_name,))
+                columns = cur.fetchall()
+                # 获取约束信息
+                cur.execute("""
+                    SELECT
+                        conname as constraint_name,
+                        contype as constraint_type
+                    FROM pg_constraint c
+                    JOIN pg_class t ON c.conrelid = t.oid
+                    WHERE t.relname = %s
+                """, (table_name,))
+                constraints = cur.fetchall()
+                return str({
+                    'columns': [{
+                        'name': col[0],
+                        'type': col[1],
+                        'nullable': col[2] == 'YES',
+                        'description': col[3]
+                    } for col in columns],
+                    'constraints': [{
+                        'name': con[0],
+                        'type': con[1]
+                    } for con in constraints]
+                })
+        except psycopg2.Error as e:
+            error_msg = f"读取表结构失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            self.log("error", error_msg)
+            raise
+        finally:
+            self.pool.putconn(conn)
+    def get_tools(self) -> list[types.Tool]:
+        """获取可用工具列表"""
+        return [
+            types.Tool(
+                name="query",
+                description="执行只读SQL查询",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "database": {
+                            "type": "string",
+                            "description": "数据库配置名称（可选）"
                         },
-                        "required": ["sql"]
-                    }
-                )
-            ]
-
-        @self.server.call_tool()
-        async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-            """处理工具调用"""
-            if name != "query":
-                raise ValueError(f"未知工具: {name}")
-
-            sql = arguments.get("sql", "").strip()
-            if not sql:
-                raise ValueError("SQL查询不能为空")
-
-            # 仅允许SELECT语句
-            if not sql.lower().startswith("select"):
-                raise ValueError("仅支持SELECT查询")
-
-            # 准备连接
-            use_pool = True
-            conn = None
-            database = arguments.get("database")
-
-            try:
-                if database and self.config_path:
-                    # 使用指定的数据库配置
-                    config = PostgresConfig.from_yaml(self.config_path, database)
-                    conn_params = config.get_connection_params()
-                    masked_params = config.get_masked_connection_info()
-                    self.log("info", f"使用配置 {database} 连接数据库: {masked_params}")
-                    conn = psycopg2.connect(**conn_params)
-                    use_pool = False
-                else:
-                    # 使用现有连接池
-                    conn = self.pool.getconn()
-
-                self.log("info", f"执行查询: {sql}")
-
-                with conn.cursor() as cur:
-                    # 启动只读事务
-                    cur.execute("BEGIN TRANSACTION READ ONLY")
-                    try:
-                        cur.execute(sql)
-                        results = cur.fetchall()
-                        columns = [desc[0] for desc in cur.description]
-
-                        formatted_results = [dict(zip(columns, row)) for row in results]
-                        result_text = str({
-                            'columns': columns,
-                            'rows': formatted_results,
-                            'row_count': len(results)
-                        })
-
-                        self.log("info", f"查询完成，返回{len(results)}行结果")
-                        return [types.TextContent(type="text", text=result_text)]
-                    finally:
-                        cur.execute("ROLLBACK")
-            except Exception as e:
-                if isinstance(e, psycopg2.Error):
-                    error_msg = f"查询执行失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-                else:
-                    error_msg = f"查询执行失败: {str(e)}"
-                self.log("error", error_msg)
-                return [types.TextContent(type="text", text=error_msg)]
-            finally:
-                if conn:
-                    if use_pool:
-                        self.pool.putconn(conn)
-                    else:
-                        conn.close()
-
-    async def run(self):
-        """运行服务器"""
-        async with stdio_server() as streams:
-            await self.server.run(
-                streams[0],
-                streams[1],
-                self.server.create_initialization_options()
+                        "sql": {
+                            "type": "string",
+                            "description": "SQL查询语句（仅支持SELECT）"
+                        }
+                    },
+                    "required": ["sql"]
+                }
             )
-
-    def cleanup(self):
+        ]
+    async def call_tool(self, name: str, arguments: dict) -> list[types.TextContent]:
+        """执行工具调用"""
+        if name != "query":
+            raise ValueError(f"未知工具: {name}")
+        sql = arguments.get("sql", "").strip()
+        if not sql:
+            raise ValueError("SQL查询不能为空")
+        # 仅允许SELECT语句
+        if not sql.lower().startswith("select"):
+            raise ValueError("仅支持SELECT查询")
+        database = arguments.get("database")
+        use_pool = True
+        conn = None
+        try:
+            if database and self.config_path:
+                # 使用指定的数据库配置
+                config = PostgresConfig.from_yaml(self.config_path, database)
+                conn_params = config.get_connection_params()
+                masked_params = config.get_masked_connection_info()
+                self.log("info", f"使用配置 {database} 连接数据库: {masked_params}")
+                conn = psycopg2.connect(**conn_params)
+                use_pool = False
+            else:
+                # 使用现有连接池
+                conn = self.pool.getconn()
+            self.log("info", f"执行查询: {sql}")
+            with conn.cursor() as cur:
+                # 启动只读事务
+                cur.execute("BEGIN TRANSACTION READ ONLY")
+                try:
+                    cur.execute(sql)
+                    results = cur.fetchall()
+                    columns = [desc[0] for desc in cur.description]
+                    formatted_results = [dict(zip(columns, row)) for row in results]
+                    result_text = str({
+                        'columns': columns,
+                        'rows': formatted_results,
+                        'row_count': len(results)
+                    })
+                    self.log("info", f"查询完成，返回{len(results)}行结果")
+                    return [types.TextContent(type="text", text=result_text)]
+                finally:
+                    cur.execute("ROLLBACK")
+        except Exception as e:
+            if isinstance(e, psycopg2.Error):
+                error_msg = f"查询执行失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            else:
+                error_msg = f"查询执行失败: {str(e)}"
+            self.log("error", error_msg)
+            return [types.TextContent(type="text", text=error_msg)]
+        finally:
+            if conn:
+                if use_pool:
+                    self.pool.putconn(conn)
+                else:
+                    conn.close()
+    async def cleanup(self):
         """清理资源"""
         if hasattr(self, 'pool'):
             self.log("info", "关闭数据库连接池")
             self.pool.closeall()
-
-def check_yaml_configuration(yaml_path: str, logger=None) -> Tuple[str, list[str]]:
-    """检查YAML配置文件，返回默认数据库和可用数据库列表"""
-    try:
-        with open(yaml_path, 'r') as f:
-            config = yaml.safe_load(f)
-
-        if not config or 'databases' not in config:
-            raise ValueError("配置文件必须包含 databases 配置")
-
-        available_dbs = list(config['databases'].keys())
-        if not available_dbs:
-            raise ValueError("没有找到数据库配置")
-
-        # 返回第一个数据库作为默认值
-        return available_dbs[0], available_dbs
-
-    except Exception as e:
-        if logger:
-            logger("error", f"读取配置文件失败: {str(e)}")
-        raise
-
-async def run_server():
-    """服务器实际运行逻辑"""
-    parser = argparse.ArgumentParser(description='MCP PostgreSQL Server')
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--config', help='YAML配置文件路径')
-    group.add_argument('--database-url', help='数据库连接URL')
-    parser.add_argument('--local-host', help='本地主机地址', default=None)
-    parser.add_argument('--database', help='要使用的数据库配置名称')
-
-    args = parser.parse_args()
-    logger = create_logger("postgres", False)
-
-    try:
-        config = None
-        config_path = None
-
-        if args.config:
-            config_path = args.config
-            # 解析配置文件
-            default_db, available_dbs = check_yaml_configuration(args.config, logger)
-            selected_db = args.database or default_db
-
-            if selected_db not in available_dbs:
-                raise ValueError(f"未知的数据库配置: {selected_db}。可用的配置: {available_dbs}")
-
-            config = PostgresConfig.from_yaml(args.config, selected_db, args.local_host)
-        else:
-            config = PostgresConfig.from_url(args.database_url, args.local_host)
-
-        # 创建并运行服务器
-        server = PostgresServer(config, config_path)
-        await server.run()
-    except KeyboardInterrupt:
-        print("\n服务器已停止", file=sys.stderr)
-    except Exception as e:
-        logger("error", f"服务器启动失败: {str(e)}")
-        sys.exit(1)
-    finally:
-        if 'server' in locals():
-            server.cleanup()
-
-def main():
-    """命令行入口函数"""
-    asyncio.run(run_server())
