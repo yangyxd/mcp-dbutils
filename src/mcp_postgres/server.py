@@ -133,98 +133,73 @@ class PostgresServer:
             """列出可用的工具"""
             return [
                 types.Tool(
-                    name="set_database_profile",
-                    description="设置要连接的目标数据库配置。在执行任何SQL查询前必须先调用此工具选择数据库。",
+                    name="query_db",
+                    description="在指定的数据库配置上执行只读SQL查询",
                     properties={
-                        "profile_name": {
+                        "database_profile": {
                             "type": "string",
                             "description": "数据库配置名称，例如：compass-prod, compass-staging等",
                             "required": True
-                        }
-                    }
-                ),
-                types.Tool(
-                    name="sql",
-                    description="执行只读SQL查询",
-                    properties={
+                        },
                         "sql": {
                             "type": "string",
-                            "description": "SQL查询语句（仅支持SELECT）"
+                            "description": "SQL查询语句（仅支持SELECT）",
+                            "required": True
                         }
                     }
                 )
             ]
 
         @self.server.call_tool()
-        async def handle_set_database_profile(self, name: str, arguments: dict) -> list[types.TextContent]:
-            """处理数据库配置选择"""
-            if name != "set_database_profile":
+        async def handle_query_db(self, name: str, arguments: dict) -> list[types.TextContent]:
+            """处理数据库查询"""
+            if name != "query_db":
                 return [types.TextContent(type="text", text=f"未知工具: {name}")]
 
-            profile_name = arguments.get("profile_name")
+            profile_name = arguments.get("database_profile")
+            sql = arguments.get("sql", "").strip()
+
             if not profile_name:
                 return [types.TextContent(type="text", text="必须提供数据库配置名称")]
-
-            try:
-                test_config = PostgresConfig.from_yaml(self.config_path, profile_name, self.local_host)
-                conn_params = test_config.get_connection_params()
-
-                # 测试连接
-                test_conn = psycopg2.connect(**conn_params)
-                test_conn.close()
-
-                # 保存当前选择的配置名称
-                self.current_db_profile = profile_name
-                return [types.TextContent(type="text", text=f"成功切换到数据库配置：{profile_name}")]
-            except Exception as e:
-                return [types.TextContent(type="text", text=f"数据库配置 {profile_name} 连接失败: {str(e)}")]
-
-        @self.server.call_tool()
-        async def handle_sql(self, name: str, arguments: dict) -> list[types.TextContent]:
-            """处理SQL查询"""
-            if name != "sql":
-                return [types.TextContent(type="text", text=f"未知工具: {name}")]
-
-            if not hasattr(self, 'current_db_profile'):
-                return [types.TextContent(type="text", text="请先使用set_database_profile工具选择要连接的数据库")]
-
-            sql = arguments.get("sql", "").strip()
             if not sql:
                 return [types.TextContent(type="text", text="SQL查询不能为空")]
-
-            # 仅允许SELECT语句
             if not sql.lower().startswith("select"):
                 return [types.TextContent(type="text", text="仅支持SELECT查询")]
 
-            self.log("info", f"在数据库 {self.current_db_profile} 上执行查询: {sql}")
-
             try:
-                conn = self.pool.getconn()
-                with conn.cursor() as cur:
-                    # 启动只读事务
-                    cur.execute("BEGIN TRANSACTION READ ONLY")
-                    try:
-                        cur.execute(sql)
-                        results = cur.fetchall()
-                        columns = [desc[0] for desc in cur.description]
+                # 使用指定的数据库配置
+                config = PostgresConfig.from_yaml(self.config_path, profile_name, self.local_host)
+                conn_params = config.get_connection_params()
 
-                        formatted_results = [dict(zip(columns, row)) for row in results]
-                        result_text = str({
-                            'columns': columns,
-                            'rows': formatted_results,
-                            'row_count': len(results)
-                        })
+                self.log("info", f"在数据库 {profile_name} 上执行查询: {sql}")
 
-                        self.log("info", f"查询完成，返回{len(results)}行结果")
-                        return [types.TextContent(type="text", text=result_text)]
-                    finally:
-                        cur.execute("ROLLBACK")
-            except psycopg2.Error as e:
-                error_msg = f"查询执行失败: {str(e)}"
+                # 建立连接并执行查询
+                conn = psycopg2.connect(**conn_params)
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute("BEGIN TRANSACTION READ ONLY")
+                        try:
+                            cur.execute(sql)
+                            results = cur.fetchall()
+                            columns = [desc[0] for desc in cur.description]
+
+                            formatted_results = [dict(zip(columns, row)) for row in results]
+                            result_text = str({
+                                'columns': columns,
+                                'rows': formatted_results,
+                                'row_count': len(results)
+                            })
+
+                            self.log("info", f"查询完成，返回{len(results)}行结果")
+                            return [types.TextContent(type="text", text=result_text)]
+                        finally:
+                            cur.execute("ROLLBACK")
+                finally:
+                    conn.close()
+            except Exception as e:
+                error_msg = f"数据库操作失败: {str(e)}"
                 self.log("error", error_msg)
                 return [types.TextContent(type="text", text=error_msg)]
-            finally:
-                self.pool.putconn(conn)
 
         @self.server.call_tool()
         async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
