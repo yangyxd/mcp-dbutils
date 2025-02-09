@@ -11,7 +11,7 @@ from ..log import create_logger
 from .config import SqliteConfig
 
 class SqliteServer(DatabaseServer):
-    def __init__(self, config: SqliteConfig):
+    def __init__(self, config: SqliteConfig, config_path: Optional[str] = None):
         """初始化 SQLite 服务器
 
         Args:
@@ -19,6 +19,7 @@ class SqliteServer(DatabaseServer):
         """
         super().__init__("sqlite-server", config.debug)
         self.config = config
+        self.config_path = config_path
         self.log = create_logger("sqlite", config.debug)
 
         # 确保数据库目录存在
@@ -45,8 +46,24 @@ class SqliteServer(DatabaseServer):
 
     async def list_resources(self) -> list[types.Resource]:
         """列出所有表资源"""
+        use_default = True
+        conn = None
         try:
-            with closing(self._get_connection()) as conn:
+            database = arguments.get("database")
+            if database and self.config_path:
+                # 使用指定的数据库配置
+                config = SqliteConfig.from_yaml(self.config_path, database)
+                connection_params = config.get_connection_params()
+                masked_params = config.get_masked_connection_info()
+                self.log("info", f"使用配置 {database} 连接数据库: {masked_params}")
+                conn = sqlite3.connect(**connection_params)
+                conn.row_factory = sqlite3.Row
+                use_default = False
+            else:
+                # 使用默认连接
+                conn = self._get_connection()
+
+            with closing(conn) as connection:
                 cursor = conn.execute(
                     "SELECT name FROM sqlite_master WHERE type='table'"
                 )
@@ -105,6 +122,10 @@ class SqliteServer(DatabaseServer):
                 inputSchema={
                     "type": "object",
                     "properties": {
+                        "database": {
+                            "type": "string",
+                            "description": "数据库配置名称（可选）"
+                        },
                         "sql": {
                             "type": "string",
                             "description": "SQL查询语句（仅支持SELECT）"
@@ -128,8 +149,24 @@ class SqliteServer(DatabaseServer):
         if not sql.lower().startswith("select"):
             raise ValueError("仅支持SELECT查询")
 
+        use_default = True
+        conn = None
         try:
-            with closing(self._get_connection()) as conn:
+            database = arguments.get("database")
+            if database and self.config_path:
+                # 使用指定的数据库配置
+                config = SqliteConfig.from_yaml(self.config_path, database)
+                connection_params = config.get_connection_params()
+                masked_params = config.get_masked_connection_info()
+                self.log("info", f"使用配置 {database} 连接数据库: {masked_params}")
+                conn = sqlite3.connect(**connection_params)
+                conn.row_factory = sqlite3.Row
+                use_default = False
+            else:
+                # 使用默认连接
+                conn = self._get_connection()
+
+            with closing(conn) as connection:
                 self.log("info", f"执行查询: {sql}")
                 cursor = conn.execute(sql)
                 results = cursor.fetchall()
