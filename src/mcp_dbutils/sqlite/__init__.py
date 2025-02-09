@@ -1,6 +1,6 @@
-"""SQLite module for MCP Database Utilities"""
+"""SQLite module"""
 
-from .server import SqliteServer
+from .handler import SqliteHandler
 from .config import SqliteConfig
 
-__all__ = ['SqliteServer', 'SqliteConfig']
+__all__ = ['SqliteHandler', 'SqliteConfig']
