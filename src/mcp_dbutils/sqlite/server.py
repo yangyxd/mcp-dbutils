@@ -175,16 +175,24 @@ class SqliteServer(DatabaseServer):
                 formatted_results = [dict(zip(columns, row)) for row in results]
 
                 result_text = str({
-                    'columns': columns,
-                    'rows': formatted_results,
-                    'row_count': len(results)
+                    'type': 'sqlite',
+                    'config_name': database or 'default',
+                    'query_result': {
+                        'columns': columns,
+                        'rows': formatted_results,
+                        'row_count': len(results)
+                    }
                 })
 
                 self.log("info", f"查询完成，返回{len(results)}行结果")
                 return [types.TextContent(type="text", text=result_text)]
 
         except sqlite3.Error as e:
-            error_msg = f"查询执行失败: {str(e)}"
+            error_msg = str({
+                'type': 'sqlite',
+                'config_name': database or 'default',
+                'error': f"查询执行失败: {str(e)}"
+            })
             self.log("error", error_msg)
             return [types.TextContent(type="text", text=error_msg)]
 

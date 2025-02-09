@@ -1,6 +1,6 @@
 """PostgreSQL configuration module"""
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from ..config import DatabaseConfig
 @dataclass
 class PostgresConfig(DatabaseConfig):
@@ -10,6 +10,7 @@ class PostgresConfig(DatabaseConfig):
     host: str = 'localhost'
     port: str = '5432'
     local_host: Optional[str] = None
+    type: Literal['postgres'] = 'postgres'
     @classmethod
     def from_yaml(cls, yaml_path: str, db_name: str, local_host: Optional[str] = None) -> 'PostgresConfig':
         """从YAML文件创建配置
@@ -25,6 +26,11 @@ class PostgresConfig(DatabaseConfig):
             available_dbs = list(configs.keys())
             raise ValueError(f"未找到数据库配置: {db_name}。可用的数据库配置: {available_dbs}")
         db_config = configs[db_name]
+        if 'type' not in db_config:
+            raise ValueError(f"数据库配置必须包含 type 字段")
+        if db_config['type'] != 'postgres':
+            raise ValueError(f"该配置不是PostgreSQL数据库类型: {db_config['type']}")
+
         config = cls(
             dbname=db_config.get('dbname', ''),
             user=db_config.get('user', ''),

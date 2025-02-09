@@ -87,7 +87,7 @@ class DatabaseServer:
             handler = None
             try:
                 # 根据配置确定数据库类型并创建相应的处理器
-                if 'db_path' in db_config:
+                if 'path' in db_config:
                     from .sqlite.handler import SqliteHandler
                     handler = SqliteHandler(self.config_path, database, self.debug)
                 elif 'dbname' in db_config or 'host' in db_config:

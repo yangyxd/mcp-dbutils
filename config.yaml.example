@@ -1,16 +1,18 @@
 databases:
   dev-db:
-    db_path: /Users/donghao/dev/workspace/playground.db
+    type: sqlite
+    path: /path/to/dev.db
     password: 
   
   test-db:
-    db_path: /Users/donghao/dev/workspace/playground.db
+    type: sqlite
+    path: /path/to/test.db
     password: test_pass
 
   prod-db:
+    type: postgres
     host: prod.example.com
     port: 5432
     dbname: prod_db
     user: prod_user
     password: prod_pass
-

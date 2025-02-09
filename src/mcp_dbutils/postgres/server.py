@@ -168,9 +168,13 @@ class PostgresServer(DatabaseServer):
                     columns = [desc[0] for desc in cur.description]
                     formatted_results = [dict(zip(columns, row)) for row in results]
                     result_text = str({
-                        'columns': columns,
-                        'rows': formatted_results,
-                        'row_count': len(results)
+                        'type': 'postgres',
+                        'config_name': database or 'default',
+                        'query_result': {
+                            'columns': columns,
+                            'rows': formatted_results,
+                            'row_count': len(results)
+                        }
                     })
                     self.log("info", f"查询完成，返回{len(results)}行结果")
                     return [types.TextContent(type="text", text=result_text)]
@@ -178,9 +182,14 @@ class PostgresServer(DatabaseServer):
                     cur.execute("ROLLBACK")
         except Exception as e:
             if isinstance(e, psycopg2.Error):
-                error_msg = f"查询执行失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+                error = f"查询执行失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             else:
-                error_msg = f"查询执行失败: {str(e)}"
+                error = f"查询执行失败: {str(e)}"
+            error_msg = str({
+                'type': 'postgres',
+                'config_name': database or 'default',
+                'error': error
+            })
             self.log("error", error_msg)
             return [types.TextContent(type="text", text=error_msg)]
         finally:

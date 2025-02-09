@@ -2,19 +2,20 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Literal
 from ..config import DatabaseConfig
 
 @dataclass
 class SqliteConfig(DatabaseConfig):
-    db_path: str
+    path: str
     password: Optional[str] = None
     uri: bool = True  # 启用 URI 模式以支持密码等参数
+    type: Literal['sqlite'] = 'sqlite'
 
     @property
     def absolute_path(self) -> str:
         """返回数据库文件的绝对路径"""
-        return str(Path(self.db_path).expanduser().resolve())
+        return str(Path(self.path).expanduser().resolve())
 
     def get_connection_params(self) -> Dict[str, Any]:
         """获取 sqlite3 连接参数"""
@@ -57,11 +58,15 @@ class SqliteConfig(DatabaseConfig):
 
         db_config = configs[db_name]
 
-        if "db_path" not in db_config:
-            raise ValueError(f"SQLite配置必须包含 db_path")
+        if 'type' not in db_config:
+            raise ValueError(f"数据库配置必须包含 type 字段")
+        if db_config['type'] != 'sqlite':
+            raise ValueError(f"该配置不是SQLite数据库类型: {db_config['type']}")
+        if 'path' not in db_config:
+            raise ValueError(f"SQLite配置必须包含 path 字段")
 
         config = cls(
-            db_path=db_config['db_path'],
+            path=db_config['path'],
             password=db_config.get('password'),
             uri=True
         )
