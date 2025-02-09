@@ -3,6 +3,10 @@ name = "mcp-dbutils"
 version = "0.2.2"
 description = "MCP Database Utilities Service"
 readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Dong Hao"}
+]
 dependencies = [
       "mcp>=1.2.1",
       "psycopg2-binary>=2.9.10",
