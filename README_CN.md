@@ -13,12 +13,65 @@ MCP数据库服务是一个统一的数据库访问服务，支持多种数据�
 
 ## 安装与配置
 
+### 安装方式
+
+#### 使用 uvx 安装（推荐）
+不需要专门安装，直接使用 `uvx` 运行：
+```bash
+uvx mcp-dbutils --config /path/to/config.yaml
+```
+
+添加到 Claude 配置：
+```json
+"mcpServers": {
+  "database": {
+    "command": "uvx",
+    "args": ["mcp-dbutils", "--config", "/path/to/config.yaml"]
+  }
+}
+```
+
+#### 使用 pip 安装
+```bash
+pip install mcp-dbutils
+```
+
+添加到 Claude 配置：
+```json
+"mcpServers": {
+  "database": {
+    "command": "python",
+    "args": ["-m", "mcp_dbutils", "--config", "/path/to/config.yaml"]
+  }
+}
+```
+
+#### 使用 Docker 安装
+```bash
+docker run -i --rm \
+  -v /path/to/config.yaml:/app/config.yaml \
+  mcp/dbutils --config /app/config.yaml
+```
+
+添加到 Claude 配置：
+```json
+"mcpServers": {
+  "database": {
+    "command": "docker",
+    "args": ["run", "-i", "--rm", "-v", "/path/to/config.yaml:/app/config.yaml", 
+             "mcp/dbutils", "--config", "/app/config.yaml"]
+  }
+}
+```
+
 ### 环境要求
-- Python 3.7+
+- Python 3.10+
 - PostgreSQL (可选)
 - SQLite3 (可选)
 
-### 配置示例
+### 配置文件
+项目运行需要一个YAML格式的配置文件，通过 `--config` 参数指定路径。配置示例：
+
 ```yaml
 databases:
   # PostgreSQL配置示例
