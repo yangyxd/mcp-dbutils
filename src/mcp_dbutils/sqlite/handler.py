@@ -10,32 +10,32 @@ from .config import SqliteConfig
 
 class SqliteHandler(DatabaseHandler):
     def __init__(self, config_path: str, database: str, debug: bool = False):
-        """初始化 SQLite 处理器
+        """Initialize SQLite handler
 
         Args:
-            config_path: 配置文件路径
-            database: 数据库配置名称
-            debug: 是否开启调试模式
+            config_path: Path to configuration file
+            database: Database configuration name
+            debug: Enable debug mode
         """
         super().__init__(config_path, database, debug)
         self.config = SqliteConfig.from_yaml(config_path, database)
 
-        # 确保数据库目录存在
+        # Ensure database directory exists
         db_file = Path(self.config.absolute_path)
         db_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # 初始化时不再测试连接
-        self.log("debug", f"配置数据库: {self.config.get_masked_connection_info()}")
+        # No connection test during initialization
+        self.log("debug", f"Configuring database: {self.config.get_masked_connection_info()}")
 
     def _get_connection(self):
-        """获取数据库连接"""
+        """Get database connection"""
         connection_params = self.config.get_connection_params()
         conn = sqlite3.connect(**connection_params)
         conn.row_factory = sqlite3.Row
         return conn
 
     async def get_tables(self) -> list[types.Resource]:
-        """获取所有表资源"""
+        """Get all table resources"""
         try:
             with closing(self._get_connection()) as conn:
                 cursor = conn.execute(
@@ -51,19 +51,19 @@ class SqliteHandler(DatabaseHandler):
                     ) for table in tables
                 ]
         except sqlite3.Error as e:
-            error_msg = f"获取表列表失败: {str(e)}"
+            error_msg = f"Failed to get table list: {str(e)}"
             self.log("error", error_msg)
             raise
 
     async def get_schema(self, table_name: str) -> str:
-        """获取表结构信息"""
+        """Get table schema information"""
         try:
             with closing(self._get_connection()) as conn:
-                # 获取表结构
+                # Get table structure
                 cursor = conn.execute(f"PRAGMA table_info({table_name})")
                 columns = cursor.fetchall()
 
-                # 获取索引信息
+                # Get index information
                 cursor = conn.execute(f"PRAGMA index_list({table_name})")
                 indexes = cursor.fetchall()
 
@@ -82,15 +82,15 @@ class SqliteHandler(DatabaseHandler):
 
                 return str(schema_info)
         except sqlite3.Error as e:
-            error_msg = f"读取表结构失败: {str(e)}"
+            error_msg = f"Failed to read table schema: {str(e)}"
             self.log("error", error_msg)
             raise
 
     async def execute_query(self, sql: str) -> str:
-        """执行SQL查询"""
+        """Execute SQL query"""
         try:
             with closing(self._get_connection()) as conn:
-                self.log("info", f"执行查询: {sql}")
+                self.log("info", f"Executing query: {sql}")
                 cursor = conn.execute(sql)
                 results = cursor.fetchall()
 
@@ -103,15 +103,15 @@ class SqliteHandler(DatabaseHandler):
                     'row_count': len(results)
                 })
 
-                self.log("info", f"查询完成，返回{len(results)}行结果")
+                self.log("info", f"Query completed, returned {len(results)} rows")
                 return result_text
 
         except sqlite3.Error as e:
-            error_msg = f"查询执行失败: {str(e)}"
+            error_msg = f"Query execution failed: {str(e)}"
             self.log("error", error_msg)
             raise
 
     async def cleanup(self):
-        """清理资源"""
-        # SQLite不需要特别的清理操作
+        """Cleanup resources"""
+        # No special cleanup needed for SQLite
         pass

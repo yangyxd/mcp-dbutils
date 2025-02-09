@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, Literal
 from ..config import DatabaseConfig
+
 @dataclass
 class PostgresConfig(DatabaseConfig):
     dbname: str
@@ -11,25 +12,28 @@ class PostgresConfig(DatabaseConfig):
     port: str = '5432'
     local_host: Optional[str] = None
     type: Literal['postgres'] = 'postgres'
+
     @classmethod
     def from_yaml(cls, yaml_path: str, db_name: str, local_host: Optional[str] = None) -> 'PostgresConfig':
-        """从YAML文件创建配置
+        """Create configuration from YAML file
+
         Args:
-            yaml_path: YAML配置文件路径
-            db_name: 要使用的数据库配置名称
-            local_host: 可选的本地主机地址
+            yaml_path: Path to YAML configuration file
+            db_name: Database configuration name to use
+            local_host: Optional local host address
         """
         configs = cls.load_yaml_config(yaml_path)
         if not db_name:
-            raise ValueError("必须指定数据库名称")
+            raise ValueError("Database name must be specified")
         if db_name not in configs:
             available_dbs = list(configs.keys())
-            raise ValueError(f"未找到数据库配置: {db_name}。可用的数据库配置: {available_dbs}")
+            raise ValueError(f"Database configuration not found: {db_name}. Available configurations: {available_dbs}")
+
         db_config = configs[db_name]
         if 'type' not in db_config:
-            raise ValueError(f"数据库配置必须包含 type 字段")
+            raise ValueError("Database configuration must include 'type' field")
         if db_config['type'] != 'postgres':
-            raise ValueError(f"该配置不是PostgreSQL数据库类型: {db_config['type']}")
+            raise ValueError(f"Configuration is not PostgreSQL type: {db_config['type']}")
 
         config = cls(
             dbname=db_config.get('dbname', ''),
@@ -41,8 +45,9 @@ class PostgresConfig(DatabaseConfig):
         )
         config.debug = cls.get_debug_mode()
         return config
+
     def get_connection_params(self) -> Dict[str, Any]:
-        """获取psycopg2连接参数"""
+        """Get psycopg2 connection parameters"""
         params = {
             'dbname': self.dbname,
             'user': self.user,
@@ -51,8 +56,9 @@ class PostgresConfig(DatabaseConfig):
             'port': self.port
         }
         return {k: v for k, v in params.items() if v}
+
     def get_masked_connection_info(self) -> Dict[str, Any]:
-        """返回脱敏的连接信息，用于日志输出"""
+        """Return masked connection information for logging"""
         return {
             'dbname': self.dbname,
             'host': self.local_host or self.host,

@@ -9,23 +9,23 @@ from .config import PostgresConfig
 
 class PostgresHandler(DatabaseHandler):
     def __init__(self, config_path: str, database: str, debug: bool = False):
-        """初始化 PostgreSQL 处理器
+        """Initialize PostgreSQL handler
 
         Args:
-            config_path: 配置文件路径
-            database: 数据库配置名称
-            debug: 是否开启调试模式
+            config_path: Path to configuration file
+            database: Database configuration name
+            debug: Enable debug mode
         """
         super().__init__(config_path, database, debug)
         self.config = PostgresConfig.from_yaml(config_path, database)
 
-        # 初始化时不再创建连接池
+        # No connection pool creation during initialization
         masked_params = self.config.get_masked_connection_info()
-        self.log("debug", f"配置数据库，参数: {masked_params}")
+        self.log("debug", f"Configuring database with parameters: {masked_params}")
         self.pool = None
 
     async def get_tables(self) -> list[types.Resource]:
-        """获取所有表资源"""
+        """Get all table resources"""
         try:
             conn_params = self.config.get_connection_params()
             conn = psycopg2.connect(**conn_params)
@@ -50,7 +50,7 @@ class PostgresHandler(DatabaseHandler):
                     ) for table in tables
                 ]
         except psycopg2.Error as e:
-            error_msg = f"获取表列表失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            error_msg = f"Failed to get table list: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.log("error", error_msg)
             raise
         finally:
@@ -58,12 +58,12 @@ class PostgresHandler(DatabaseHandler):
                 conn.close()
 
     async def get_schema(self, table_name: str) -> str:
-        """获取表结构信息"""
+        """Get table schema information"""
         try:
             conn_params = self.config.get_connection_params()
             conn = psycopg2.connect(**conn_params)
             with conn.cursor() as cur:
-                # 获取列信息
+                # Get column information
                 cur.execute("""
                     SELECT
                         column_name,
@@ -79,7 +79,7 @@ class PostgresHandler(DatabaseHandler):
                 """, (table_name,))
                 columns = cur.fetchall()
 
-                # 获取约束信息
+                # Get constraint information
                 cur.execute("""
                     SELECT
                         conname as constraint_name,
@@ -103,7 +103,7 @@ class PostgresHandler(DatabaseHandler):
                     } for con in constraints]
                 })
         except psycopg2.Error as e:
-            error_msg = f"读取表结构失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            error_msg = f"Failed to read table schema: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.log("error", error_msg)
             raise
         finally:
@@ -111,14 +111,14 @@ class PostgresHandler(DatabaseHandler):
                 conn.close()
 
     async def execute_query(self, sql: str) -> str:
-        """执行SQL查询"""
+        """Execute SQL query"""
         try:
             conn_params = self.config.get_connection_params()
             conn = psycopg2.connect(**conn_params)
-            self.log("info", f"执行查询: {sql}")
+            self.log("info", f"Executing query: {sql}")
 
             with conn.cursor() as cur:
-                # 启动只读事务
+                # Start read-only transaction
                 cur.execute("BEGIN TRANSACTION READ ONLY")
                 try:
                     cur.execute(sql)
@@ -132,12 +132,12 @@ class PostgresHandler(DatabaseHandler):
                         'row_count': len(results)
                     })
 
-                    self.log("info", f"查询完成，返回{len(results)}行结果")
+                    self.log("info", f"Query completed, returned {len(results)} rows")
                     return result_text
                 finally:
                     cur.execute("ROLLBACK")
         except psycopg2.Error as e:
-            error_msg = f"查询执行失败: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            error_msg = f"Query execution failed: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.log("error", error_msg)
             raise
         finally:
@@ -145,6 +145,6 @@ class PostgresHandler(DatabaseHandler):
                 conn.close()
 
     async def cleanup(self):
-        """清理资源"""
-        # 由于不再使用连接池，cleanup 不需要特别的清理操作
+        """Cleanup resources"""
+        # No special cleanup needed since we're not using connection pool
         pass

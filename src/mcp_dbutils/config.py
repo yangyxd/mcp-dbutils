@@ -7,53 +7,53 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, Literal
 from pathlib import Path
 
-# 支持的数据库类型
+# Supported database types
 DBType = Literal['sqlite', 'postgres']
 
 class DatabaseConfig(ABC):
-    """数据库配置基类"""
+    """Base class for database configuration"""
 
     debug: bool = False
-    type: DBType  # 数据库类型
+    type: DBType  # Database type
 
     @abstractmethod
     def get_connection_params(self) -> Dict[str, Any]:
-        """获取连接参数"""
+        """Get connection parameters"""
         pass
 
     @abstractmethod
     def get_masked_connection_info(self) -> Dict[str, Any]:
-        """获取用于日志的脱敏连接信息"""
+        """Get masked connection information for logging"""
         pass
 
     @classmethod
     def load_yaml_config(cls, yaml_path: str) -> Dict[str, Any]:
-        """加载YAML配置文件
+        """Load YAML configuration file
 
         Args:
-            yaml_path: YAML文件路径
+            yaml_path: Path to YAML file
 
         Returns:
-            解析后的配置字典
+            Parsed configuration dictionary
         """
         with open(yaml_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
 
         if not config or 'databases' not in config:
-            raise ValueError("配置文件必须包含 databases 配置")
+            raise ValueError("Configuration file must contain 'databases' section")
 
-        # 验证每个数据库配置中的type字段
+        # Validate type field in each database configuration
         databases = config['databases']
         for db_name, db_config in databases.items():
             if 'type' not in db_config:
-                raise ValueError(f"数据库配置 {db_name} 缺少必需的 type 字段")
+                raise ValueError(f"Database configuration {db_name} missing required 'type' field")
             db_type = db_config['type']
             if db_type not in ('sqlite', 'postgres'):
-                raise ValueError(f"数据库配置 {db_name} 的 type 字段值无效: {db_type}")
+                raise ValueError(f"Invalid type value in database configuration {db_name}: {db_type}")
 
         return databases
 
     @classmethod
     def get_debug_mode(cls) -> bool:
-        """获取调试模式状态"""
+        """Get debug mode status"""
         return os.environ.get('MCP_DEBUG', '').lower() in ('1', 'true')
