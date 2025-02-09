@@ -24,16 +24,8 @@ class SqliteHandler(DatabaseHandler):
         db_file = Path(self.config.absolute_path)
         db_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # 测试连接
-        try:
-            self.log("debug", f"正在连接数据库: {self.config.get_masked_connection_info()}")
-            connection_params = self.config.get_connection_params()
-            with closing(sqlite3.connect(**connection_params)) as conn:
-                conn.row_factory = sqlite3.Row
-            self.log("info", "数据库连接测试成功")
-        except sqlite3.Error as e:
-            self.log("error", f"数据库连接失败: {str(e)}")
-            raise
+        # 初始化时不再测试连接
+        self.log("debug", f"配置数据库: {self.config.get_masked_connection_info()}")
 
     def _get_connection(self):
         """获取数据库连接"""

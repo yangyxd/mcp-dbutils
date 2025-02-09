@@ -104,34 +104,28 @@ class DatabaseServer:
     def _setup_handlers(self):
         """设置 MCP 处理器"""
         @self.server.list_resources()
-        async def handle_list_resources() -> list[types.Resource]:
-            # 读取默认配置
-            with open(self.config_path, 'r') as f:
-                config = yaml.safe_load(f)
-                if not config or 'databases' not in config:
-                    return []
-                default_db = next(iter(config['databases'].keys()))
+        async def handle_list_resources(arguments: dict | None = None) -> list[types.Resource]:
+            if not arguments or 'database' not in arguments:
+                # 不指定数据库时，只返回空列表
+                return []
 
-            # 使用默认数据库获取资源列表
-            async with self.get_handler(default_db) as handler:
+            database = arguments['database']
+            async with self.get_handler(database) as handler:
                 return await handler.get_tables()
 
         @self.server.read_resource()
-        async def handle_read_resource(uri: str) -> str:
-            # 解析 URI 获取数据库名称和表名
+        async def handle_read_resource(uri: str, arguments: dict | None = None) -> str:
+            if not arguments or 'database' not in arguments:
+                raise ValueError("必须指定数据库配置名称")
+
             parts = uri.split('/')
             if len(parts) < 3:
                 raise ValueError("无效的资源 URI")
 
-            # 默认使用第一个配置
-            with open(self.config_path, 'r') as f:
-                config = yaml.safe_load(f)
-                if not config or 'databases' not in config:
-                    raise ValueError("无效的配置文件")
-                default_db = next(iter(config['databases'].keys()))
-
+            database = arguments['database']
             table_name = parts[-2]  # URI 格式: xxx/table_name/schema
-            async with self.get_handler(default_db) as handler:
+
+            async with self.get_handler(database) as handler:
                 return await handler.get_schema(table_name)
 
         @self.server.list_tools()

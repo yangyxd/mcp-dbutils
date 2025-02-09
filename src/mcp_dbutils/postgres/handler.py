@@ -19,28 +19,16 @@ class PostgresHandler(DatabaseHandler):
         super().__init__(config_path, database, debug)
         self.config = PostgresConfig.from_yaml(config_path, database)
 
-        # 创建连接池
-        try:
-            conn_params = self.config.get_connection_params()
-            masked_params = self.config.get_masked_connection_info()
-            self.log("debug", f"正在连接数据库，参数: {masked_params}")
-
-            # 测试连接
-            test_conn = psycopg2.connect(**conn_params)
-            test_conn.close()
-            self.log("info", "测试连接成功")
-
-            # 创建连接池
-            self.pool = SimpleConnectionPool(1, 5, **conn_params)
-            self.log("info", "数据库连接池创建成功")
-        except psycopg2.Error as e:
-            self.log("error", f"数据库连接失败: [Code: {e.pgcode}] {e.pgerror or str(e)}")
-            raise
+        # 初始化时不再创建连接池
+        masked_params = self.config.get_masked_connection_info()
+        self.log("debug", f"配置数据库，参数: {masked_params}")
+        self.pool = None
 
     async def get_tables(self) -> list[types.Resource]:
         """获取所有表资源"""
         try:
-            conn = self.pool.getconn()
+            conn_params = self.config.get_connection_params()
+            conn = psycopg2.connect(**conn_params)
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT
@@ -66,12 +54,14 @@ class PostgresHandler(DatabaseHandler):
             self.log("error", error_msg)
             raise
         finally:
-            self.pool.putconn(conn)
+            if conn:
+                conn.close()
 
     async def get_schema(self, table_name: str) -> str:
         """获取表结构信息"""
         try:
-            conn = self.pool.getconn()
+            conn_params = self.config.get_connection_params()
+            conn = psycopg2.connect(**conn_params)
             with conn.cursor() as cur:
                 # 获取列信息
                 cur.execute("""
@@ -117,12 +107,14 @@ class PostgresHandler(DatabaseHandler):
             self.log("error", error_msg)
             raise
         finally:
-            self.pool.putconn(conn)
+            if conn:
+                conn.close()
 
     async def execute_query(self, sql: str) -> str:
         """执行SQL查询"""
         try:
-            conn = self.pool.getconn()
+            conn_params = self.config.get_connection_params()
+            conn = psycopg2.connect(**conn_params)
             self.log("info", f"执行查询: {sql}")
 
             with conn.cursor() as cur:
@@ -149,10 +141,10 @@ class PostgresHandler(DatabaseHandler):
             self.log("error", error_msg)
             raise
         finally:
-            self.pool.putconn(conn)
+            if conn:
+                conn.close()
 
     async def cleanup(self):
         """清理资源"""
-        if hasattr(self, 'pool'):
-            self.log("info", "关闭数据库连接池")
-            self.pool.closeall()
+        # 由于不再使用连接池，cleanup 不需要特别的清理操作
+        pass
