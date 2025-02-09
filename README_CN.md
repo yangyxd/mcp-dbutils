@@ -24,9 +24,16 @@ uvx mcp-dbutils --config /path/to/config.yaml
 添加到 Claude 配置：
 ```json
 "mcpServers": {
-  "database": {
+  "dbutils": {
     "command": "uvx",
-    "args": ["mcp-dbutils", "--config", "/path/to/config.yaml"]
+    "args": [
+      "mcp-dbutils",
+      "--config",
+      "/path/to/config.yaml"
+    ],
+    "env": {
+      "MCP_DEBUG": "1"  // 可选：启用调试模式
+    }
   }
 }
 ```
@@ -39,9 +46,17 @@ pip install mcp-dbutils
 添加到 Claude 配置：
 ```json
 "mcpServers": {
-  "database": {
+  "dbutils": {
     "command": "python",
-    "args": ["-m", "mcp_dbutils", "--config", "/path/to/config.yaml"]
+    "args": [
+      "-m",
+      "mcp_dbutils",
+      "--config",
+      "/path/to/config.yaml"
+    ],
+    "env": {
+      "MCP_DEBUG": "1"  // 可选：启用调试模式
+    }
   }
 }
 ```
@@ -50,16 +65,28 @@ pip install mcp-dbutils
 ```bash
 docker run -i --rm \
   -v /path/to/config.yaml:/app/config.yaml \
+  -e MCP_DEBUG=1 \  # 可选：启用调试模式
   mcp/dbutils --config /app/config.yaml
 ```
 
 添加到 Claude 配置：
 ```json
 "mcpServers": {
-  "database": {
+  "dbutils": {
     "command": "docker",
-    "args": ["run", "-i", "--rm", "-v", "/path/to/config.yaml:/app/config.yaml", 
-             "mcp/dbutils", "--config", "/app/config.yaml"]
+    "args": [
+      "run",
+      "-i",
+      "--rm",
+      "-v",
+      "/path/to/config.yaml:/app/config.yaml",
+      "mcp/dbutils",
+      "--config",
+      "/app/config.yaml"
+    ],
+    "env": {
+      "MCP_DEBUG": "1"  // 可选：启用调试模式
+    }
   }
 }
 ```
@@ -96,6 +123,23 @@ databases:
 ## 架构设计
 
 ### 核心理念：抽象层设计
+
+```mermaid
+graph TD
+  Client[客户端] --> DatabaseServer[数据库服务器]
+  subgraph MCP服务器
+    DatabaseServer
+    DatabaseHandler[数据库处理器]
+    PostgresHandler[PostgreSQL处理器]
+    SQLiteHandler[SQLite处理器]
+    DatabaseServer --> DatabaseHandler
+    DatabaseHandler --> PostgresHandler
+    DatabaseHandler --> SQLiteHandler
+  end
+  PostgresHandler --> PostgreSQL[(PostgreSQL数据库)]
+  SQLiteHandler --> SQLite[(SQLite数据库)]
+```
+
 在MCP数据库服务中，抽象层设计是最核心的架构思想。它就像一个通用遥控器，不管是控制电视还是空调，用户只需要知道"按下按钮就能完成操作"。
 
 #### 1. 简化用户交互
@@ -195,3 +239,26 @@ except Exception as e:
 - 文件路径处理
 - URI模式支持
 - 密码保护支持（可选）
+
+## 参与贡献
+欢迎贡献！以下是参与项目的方式：
+
+1. 🐛 报告问题：创建 issue 描述bug和复现步骤
+2. 💡 提供建议：创建 issue 提出新功能建议
+3. 🛠️ 提交PR：fork仓库并创建包含您改动的pull request
+
+### 开发环境设置
+1. 克隆仓库
+2. 使用 `uv venv` 创建虚拟环境
+3. 使用 `uv sync --all-extras` 安装依赖
+4. 使用 `pytest` 运行测试
+
+详细指南请参见 [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+
+## 致谢
+- 感谢 [MCP Servers](https://github.com/modelcontextprotocol/servers) 提供的启发和演示
+- AI编辑器支持：
+  * [Claude Desktop](https://claude.ai/download)
+  * [5ire](https://5ire.app/)
+  * [Cline](https://cline.bot)
+- 感谢 [Model Context Protocol](https://modelcontextprotocol.io/) 提供丰富的接口支持

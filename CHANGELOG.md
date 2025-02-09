@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2025-02-09
+
+### Changed
+- Unified server configuration name to "dbutils"
+- Improved documentation formatting and readability
+- Added architecture diagrams
+- Added contribution guidelines
+- Enhanced installation instructions with environment variables
+- Added acknowledgments section
+
 ## [0.2.3] - 2025-02-09
 
 ### Added

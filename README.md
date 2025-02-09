@@ -2,7 +2,7 @@
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/donghao1393/mcp-dbutils)
 ![PyPI version](https://img.shields.io/pypi/v/mcp-dbutils)
-![Python versions](https://img.shields.io/pypi/pyversions/mcp-dbutils)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![License](https://img.shields.io/github/license/donghao1393/mcp-dbutils)
 
 [中文文档](README_CN.md)
@@ -31,9 +31,16 @@ uvx mcp-dbutils --config /path/to/config.yaml
 Add to Claude configuration:
 ```json
 "mcpServers": {
-  "database": {
+  "dbutils": {
     "command": "uvx",
-    "args": ["mcp-dbutils", "--config", "/path/to/config.yaml"]
+    "args": [
+      "mcp-dbutils",
+      "--config",
+      "/path/to/config.yaml"
+    ],
+    "env": {
+      "MCP_DEBUG": "1"  // Optional: Enable debug mode
+    }
   }
 }
 ```
@@ -46,9 +53,17 @@ pip install mcp-dbutils
 Add to Claude configuration:
 ```json
 "mcpServers": {
-  "database": {
+  "dbutils": {
     "command": "python",
-    "args": ["-m", "mcp_dbutils", "--config", "/path/to/config.yaml"]
+    "args": [
+      "-m",
+      "mcp_dbutils",
+      "--config",
+      "/path/to/config.yaml"
+    ],
+    "env": {
+      "MCP_DEBUG": "1"  // Optional: Enable debug mode
+    }
   }
 }
 ```
@@ -57,16 +72,28 @@ Add to Claude configuration:
 ```bash
 docker run -i --rm \
   -v /path/to/config.yaml:/app/config.yaml \
+  -e MCP_DEBUG=1 \  # Optional: Enable debug mode
   mcp/dbutils --config /app/config.yaml
 ```
 
 Add to Claude configuration:
 ```json
 "mcpServers": {
-  "database": {
+  "dbutils": {
     "command": "docker",
-    "args": ["run", "-i", "--rm", "-v", "/path/to/config.yaml:/app/config.yaml", 
-             "mcp/dbutils", "--config", "/app/config.yaml"]
+    "args": [
+      "run",
+      "-i",
+      "--rm",
+      "-v",
+      "/path/to/config.yaml:/app/config.yaml",
+      "mcp/dbutils",
+      "--config",
+      "/app/config.yaml"
+    ],
+    "env": {
+      "MCP_DEBUG": "1"  // Optional: Enable debug mode
+    }
   }
 }
 ```
@@ -103,6 +130,23 @@ Set environment variable `MCP_DEBUG=1` to enable debug mode for detailed logging
 ## Architecture Design
 
 ### Core Concept: Abstraction Layer
+
+```mermaid
+graph TD
+  Client[Client] --> DatabaseServer[Database Server]
+  subgraph MCP Server
+    DatabaseServer
+    DatabaseHandler[Database Handler]
+    PostgresHandler[PostgreSQL Handler]
+    SQLiteHandler[SQLite Handler]
+    DatabaseServer --> DatabaseHandler
+    DatabaseHandler --> PostgresHandler
+    DatabaseHandler --> SQLiteHandler
+  end
+  PostgresHandler --> PostgreSQL[(PostgreSQL)]
+  SQLiteHandler --> SQLite[(SQLite)]
+```
+
 The abstraction layer design is the core architectural concept in MCP Database Utilities. Just like a universal remote control that works with different devices, users only need to know the basic operations without understanding the underlying complexities.
 
 #### 1. Simplified User Interaction
@@ -202,3 +246,26 @@ Provides SQLite-specific features:
 - File path handling
 - URI scheme support
 - Password protection support (optional)
+
+## Contributing
+Contributions are welcome! Here's how you can help:
+
+1. 🐛 Report bugs: Open an issue describing the bug and how to reproduce it
+2. 💡 Suggest features: Open an issue to propose new features
+3. 🛠️ Submit PRs: Fork the repo and create a pull request with your changes
+
+### Development Setup
+1. Clone the repository
+2. Create a virtual environment using `uv venv`
+3. Install dependencies with `uv sync --all-extras`
+4. Run tests with `pytest`
+
+For detailed guidelines, see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+
+## Acknowledgments
+- [MCP Servers](https://github.com/modelcontextprotocol/servers) for inspiration and demonstration
+- AI Editors:
+  * [Claude Desktop](https://claude.ai/download)
+  * [5ire](https://5ire.app/)
+  * [Cline](https://cline.bot)
+- [Model Context Protocol](https://modelcontextprotocol.io/) for comprehensive interfaces
