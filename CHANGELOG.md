@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2025-02-09
+
+### Added
+- Added comprehensive installation guides for uvx, pip, and Docker
+- Added GitHub Actions workflow for automated PyPI releases
+- Added both English and Chinese documentation
+- Added project badges and repository information
+
+### Changed
+- Internationalized all code messages and docstrings
+- Updated Python version requirement to 3.10+
+- Improved documentation structure and examples
+- Unified project naming to mcp-dbutils across all references
+
 ## [0.2.2] - 2025-02-09
 
 ### Added
