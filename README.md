@@ -269,3 +269,7 @@ For detailed guidelines, see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
   * [5ire](https://5ire.app/)
   * [Cline](https://cline.bot)
 - [Model Context Protocol](https://modelcontextprotocol.io/) for comprehensive interfaces
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=donghao1393/mcp-dbutils&type=Date)](https://star-history.com/#donghao1393/mcp-dbutils&Date)
