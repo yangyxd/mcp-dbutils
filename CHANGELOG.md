@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5] - 2025-02-12
+
+### Added
+- Comprehensive automated tests for both PostgreSQL and SQLite handlers
+- Integration tests for database operations
+- Unit tests for configuration
+- Test fixtures and Docker-based test environments
+
 ## [0.2.4] - 2025-02-09
 
 ### Changed
