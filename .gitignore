@@ -37,6 +37,7 @@ ENV/
 .vscode/
 *.swp
 *.swo
+memory-bank/
 
 # OS
 .DS_Store
