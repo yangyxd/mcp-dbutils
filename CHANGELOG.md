@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2025-02-12
+
+### Added
+- Added test coverage reporting with pytest-cov
+- Added coverage configuration and HTML report generation
+- Added test coverage tracking for all source code
+
 ## [0.2.5] - 2025-02-12
 
 ### Added

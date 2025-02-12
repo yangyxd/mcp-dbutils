@@ -1,6 +1,6 @@
 [project]
 name = "mcp-dbutils"
-version = "0.2.4"
+version = "0.2.6"
 description = "MCP Database Utilities Service"
 readme = "README.md"
 license = "MIT"
@@ -29,5 +29,6 @@ test = [
     "pytest-docker>=2.0.0",
     "docker>=7.0.0",
     "aiosqlite>=0.19.0",
-    "testcontainers>=3.7.0"
+    "testcontainers>=3.7.0",
+    "pytest-cov>=4.1.0"
 ]
