@@ -8,7 +8,7 @@ WORKDIR /app
 # Copy the project file
 COPY pyproject.toml README.md src /app/
 
-# Install dependencies using pip and build using hatchling
+# Install dependencies and the package
 RUN pip install hatchling && \
     hatchling build && \
     pip install dist/*.whl

@@ -65,6 +65,7 @@ pip install mcp-dbutils
 ```bash
 docker run -i --rm \
   -v /path/to/config.yaml:/app/config.yaml \
+  -v /path/to/sqlite.db:/app/sqlite.db \  # 可选：用于SQLite数据库
   -e MCP_DEBUG=1 \  # 可选：启用调试模式
   mcp/dbutils --config /app/config.yaml
 ```
@@ -80,6 +81,8 @@ docker run -i --rm \
       "--rm",
       "-v",
       "/path/to/config.yaml:/app/config.yaml",
+      "-v",
+      "/path/to/sqlite.db:/app/sqlite.db",  // 可选：用于SQLite数据库
       "mcp/dbutils",
       "--config",
       "/app/config.yaml"
@@ -91,6 +94,12 @@ docker run -i --rm \
 }
 ```
 
+> **Docker数据库连接说明：**
+> - SQLite数据库：使用 `-v /path/to/sqlite.db:/app/sqlite.db` 映射数据库文件
+> - 主机上运行的PostgreSQL：
+>   - Mac/Windows：配置中使用 `host.docker.internal`
+>   - Linux：使用 `172.17.0.1`（docker0网络IP）或使用 `--network="host"` 运行
+
 ### 环境要求
 - Python 3.10+
 - PostgreSQL (可选)
@@ -101,20 +110,21 @@ docker run -i --rm \
 
 ```yaml
 databases:
-  # PostgreSQL配置示例
+  # PostgreSQL配置示例（使用Docker）
   my_postgres:
     type: postgres
     dbname: test_db
     user: postgres
     password: secret
-    host: localhost
+    host: host.docker.internal  # Mac/Windows系统使用
+    # host: 172.17.0.1         # Linux系统使用（docker0网络IP）
     port: 5432
 
-  # SQLite配置示例
+  # SQLite配置示例（使用Docker）
   my_sqlite:
     type: sqlite
-    path: /path/to/database.db
-    password: optional_password  # 可选
+    path: /app/sqlite.db       # 容器内的映射路径
+    password: optional_password # 可选
 ```
 
 ### 调试模式

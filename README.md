@@ -80,6 +80,7 @@ Add to Claude configuration:
 ```bash
 docker run -i --rm \
   -v /path/to/config.yaml:/app/config.yaml \
+  -v /path/to/sqlite.db:/app/sqlite.db \  # Optional: for SQLite database
   -e MCP_DEBUG=1 \  # Optional: Enable debug mode
   mcp/dbutils --config /app/config.yaml
 ```
@@ -95,6 +96,8 @@ Add to Claude configuration:
       "--rm",
       "-v",
       "/path/to/config.yaml:/app/config.yaml",
+      "-v",
+      "/path/to/sqlite.db:/app/sqlite.db",  // Optional: for SQLite database
       "mcp/dbutils",
       "--config",
       "/app/config.yaml"
@@ -106,6 +109,12 @@ Add to Claude configuration:
 }
 ```
 
+> **Note for Docker database connections:**
+> - For SQLite: Mount your database file using `-v /path/to/sqlite.db:/app/sqlite.db`
+> - For PostgreSQL running on host:
+>   - On Mac/Windows: Use `host.docker.internal` as host in config
+>   - On Linux: Use `172.17.0.1` (docker0 IP) or run with `--network="host"`
+
 ### Requirements
 - Python 3.10+
 - PostgreSQL (optional)
@@ -116,20 +125,21 @@ The project requires a YAML configuration file, specified via the `--config` par
 
 ```yaml
 databases:
-  # PostgreSQL example
+  # PostgreSQL example (when using Docker)
   my_postgres:
     type: postgres
     dbname: test_db
     user: postgres
     password: secret
-    host: localhost
+    host: host.docker.internal  # For Mac/Windows
+    # host: 172.17.0.1         # For Linux (docker0 IP)
     port: 5432
 
-  # SQLite example
+  # SQLite example (when using Docker)
   my_sqlite:
     type: sqlite
-    path: /path/to/database.db
-    password: optional_password  # optional
+    path: /app/sqlite.db       # Mapped path inside container
+    password: optional_password # optional
 ```
 
 ### Debug Mode
