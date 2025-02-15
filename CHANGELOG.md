@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.9] - 2025-02-15
+
+### Changed
+- Optimized database type handling
+  - Removed redundant type detection based on path/dbname
+  - Now using explicit 'type' field from configuration
+  - Added custom exception classes for better error handling
+  - Enhanced logging for handler lifecycle
+
+### Added
+- New exception hierarchy for better error handling
+  - DatabaseError as base exception
+  - ConfigurationError for configuration issues
+  - ConnectionError for connection problems
+- Improved debug logging
+  - Added handler creation logs
+  - Added cleanup operation logs
+  - Enhanced error messages with more context
+
 ## [0.2.8] - 2025-02-15
 
 ### Changed
