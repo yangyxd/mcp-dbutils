@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7] - 2025-02-15
+
+### Added
+- Added GitHub Actions workflow for automated testing
+- Added PostgreSQL service in CI environment
+- Added detailed test reporting with coverage in CI
+
 ## [0.2.6] - 2025-02-12
 
 ### Added
