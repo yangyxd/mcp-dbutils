@@ -51,7 +51,7 @@ class PostgresHandler(DatabaseHandler):
                 ]
         except psycopg2.Error as e:
             error_msg = f"Failed to get table list: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-            self.log("error", error_msg)
+            self.stats.record_error(e.__class__.__name__)
             raise DatabaseError(error_msg)
         finally:
             if conn:
@@ -104,18 +104,19 @@ class PostgresHandler(DatabaseHandler):
                 })
         except psycopg2.Error as e:
             error_msg = f"Failed to read table schema: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-            self.log("error", error_msg)
+            self.stats.record_error(e.__class__.__name__)
             raise DatabaseError(error_msg)
         finally:
             if conn:
                 conn.close()
 
-    async def execute_query(self, sql: str) -> str:
+    async def _execute_query(self, sql: str) -> str:
         """Execute SQL query"""
+        conn = None
         try:
             conn_params = self.config.get_connection_params()
             conn = psycopg2.connect(**conn_params)
-            self.log("info", f"Executing query: {sql}")
+            self.log("debug", f"Executing query: {sql}")
 
             with conn.cursor() as cur:
                 # Start read-only transaction
@@ -132,13 +133,12 @@ class PostgresHandler(DatabaseHandler):
                         'row_count': len(results)
                     })
 
-                    self.log("info", f"Query completed, returned {len(results)} rows")
+                    self.log("debug", f"Query completed, returned {len(results)} rows")
                     return result_text
                 finally:
                     cur.execute("ROLLBACK")
         except psycopg2.Error as e:
             error_msg = f"Query execution failed: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-            self.log("error", error_msg)
             raise DatabaseError(error_msg)
         finally:
             if conn:
@@ -146,5 +146,5 @@ class PostgresHandler(DatabaseHandler):
 
     async def cleanup(self):
         """Cleanup resources"""
-        # No special cleanup needed since we're not using connection pool
-        pass
+        # Log final stats before cleanup
+        self.log("info", f"Final PostgreSQL handler stats: {self.stats.to_dict()}")

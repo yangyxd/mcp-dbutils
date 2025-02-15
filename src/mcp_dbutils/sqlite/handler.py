@@ -86,7 +86,7 @@ class SqliteHandler(DatabaseHandler):
             self.log("error", error_msg)
             raise
 
-    async def execute_query(self, sql: str) -> str:
+    async def _execute_query(self, sql: str) -> str:
         """Execute SQL query"""
         # Check for non-SELECT queries
         sql_lower = sql.lower().strip()
@@ -98,12 +98,11 @@ class SqliteHandler(DatabaseHandler):
                 error_msg = "cannot execute UPDATE statement"
             elif sql_lower.startswith('insert'):
                 error_msg = "cannot execute INSERT statement"
-            self.log("error", error_msg)
             raise DatabaseError(error_msg)
 
         try:
             with closing(self._get_connection()) as conn:
-                self.log("info", f"Executing query: {sql}")
+                self.log("debug", f"Executing query: {sql}")
                 cursor = conn.execute(sql)
                 results = cursor.fetchall()
 
@@ -116,15 +115,14 @@ class SqliteHandler(DatabaseHandler):
                     'row_count': len(results)
                 })
 
-                self.log("info", f"Query completed, returned {len(results)} rows")
+                self.log("debug", f"Query completed, returned {len(results)} rows")
                 return result_text
 
         except sqlite3.Error as e:
             error_msg = f"Query execution failed: {str(e)}"
-            self.log("error", error_msg)
             raise DatabaseError(error_msg)
 
     async def cleanup(self):
         """Cleanup resources"""
-        # No special cleanup needed for SQLite
-        pass
+        # Log final stats before cleanup
+        self.log("info", f"Final SQLite handler stats: {self.stats.to_dict()}")

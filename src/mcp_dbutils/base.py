@@ -15,11 +15,13 @@ class ConnectionError(DatabaseError):
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, AsyncContextManager
 from contextlib import asynccontextmanager
+import json
 import yaml
 from mcp.server import Server, NotificationOptions
 import mcp.server.stdio
 import mcp.types as types
 from .log import create_logger
+from .stats import ResourceStats
 
 class DatabaseHandler(ABC):
     """Abstract base class defining common interface for database handlers"""
@@ -36,6 +38,7 @@ class DatabaseHandler(ABC):
         self.database = database
         self.debug = debug
         self.log = create_logger(f"db-handler-{database}", debug)
+        self.stats = ResourceStats()
 
     @abstractmethod
     async def get_tables(self) -> list[types.Resource]:
@@ -50,6 +53,20 @@ class DatabaseHandler(ABC):
     @abstractmethod
     async def execute_query(self, sql: str) -> str:
         """Execute SQL query"""
+        try:
+            self.stats.record_query()
+            result = await self._execute_query(sql)
+            self.stats.update_memory_usage(result)
+            self.log("info", f"Resource stats: {json.dumps(self.stats.to_dict())}")
+            return result
+        except Exception as e:
+            self.stats.record_error(e.__class__.__name__)
+            self.log("error", f"Query error - {str(e)}\nResource stats: {json.dumps(self.stats.to_dict())}")
+            raise
+
+    @abstractmethod
+    async def _execute_query(self, sql: str) -> str:
+        """Internal query execution method to be implemented by subclasses"""
         pass
 
     @abstractmethod
@@ -112,7 +129,9 @@ class DatabaseServer:
                 else:
                     raise ConfigurationError(f"Unsupported database type: {db_type}")
 
+                handler.stats.record_connection_start()
                 self.logger("debug", f"Handler created successfully for {database}")
+                self.logger("info", f"Resource stats: {json.dumps(handler.stats.to_dict())}")
                 yield handler
             except yaml.YAMLError as e:
                 raise ConfigurationError(f"Invalid YAML configuration: {str(e)}")
@@ -121,6 +140,8 @@ class DatabaseServer:
             finally:
                 if handler:
                     self.logger("debug", f"Cleaning up handler for {database}")
+                    handler.stats.record_connection_end()
+                    self.logger("info", f"Final resource stats: {json.dumps(handler.stats.to_dict())}")
                     await handler.cleanup()
 
     def _setup_handlers(self):
