@@ -1,5 +1,7 @@
 """MCP Database Utilities Service"""
 
+__version__ = "0.2.11"
+
 import asyncio
 import argparse
 import os
@@ -28,6 +30,7 @@ async def run_server():
     global log
     log = create_logger("mcp-dbutils", debug)
 
+    log("info", f"MCP Database Utilities Service v{__version__}")
     if debug:
         log("debug", "Debug模式已开启")
 
