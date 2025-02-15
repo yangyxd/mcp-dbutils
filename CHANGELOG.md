@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.8] - 2025-02-15
+
+### Changed
+- Improved test configuration and stability
+  - Removed custom event_loop fixture in favor of pytest-asyncio's default
+  - Configured asyncio_mode to strict for better async test behavior
+  - Set asyncio_default_fixture_loop_scope to function level
+  - Fixed all pytest-asyncio deprecation warnings
+
 ## [0.2.7] - 2025-02-15
 
 ### Added
