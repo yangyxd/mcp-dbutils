@@ -50,12 +50,13 @@ jobs:
             --cov-report=term-missing \
             --cov-report=json:coverage.json \
             tests/
-
+            
       - name: Calculate coverage percentage
         id: calc_coverage
         run: |
-          COVERAGE=$(jq '.totals.percent_covered' coverage.json)
-          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json)
+          echo "Coverage: $COVERAGE"
+          echo "percentage=${COVERAGE%.*}" >> $GITHUB_OUTPUT
           if (( $(echo "$COVERAGE >= 90" | bc -l) )); then
             echo "color=green" >> $GITHUB_OUTPUT
           elif (( $(echo "$COVERAGE >= 80" | bc -l) )); then
@@ -64,12 +65,13 @@ jobs:
             echo "color=red" >> $GITHUB_OUTPUT
           fi
 
-      - name: Coverage Badge
-        uses: schneegans/dynamic-badges-action@v1.6.0
+      - name: Create Coverage Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: bdd0a63ec2a816539ff8c136ceb41e48
           filename: coverage.json
-          label: coverage
-          message: ${{ steps.calc_coverage.outputs.percentage }}%
-          color: ${{ steps.calc_coverage.outputs.color }}
+          label: "coverage"
+          message: "${{ steps.calc_coverage.outputs.percentage }}%"
+          color: "${{ steps.calc_coverage.outputs.color }}"
+          namedLogo: python
