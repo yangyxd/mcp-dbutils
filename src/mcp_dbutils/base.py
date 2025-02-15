@@ -40,6 +40,12 @@ class DatabaseHandler(ABC):
         self.log = create_logger(f"db-handler-{database}", debug)
         self.stats = ResourceStats()
 
+    @property
+    @abstractmethod
+    def db_type(self) -> str:
+        """Return database type"""
+        pass
+
     @abstractmethod
     async def get_tables(self) -> list[types.Resource]:
         """Get list of table resources from database"""

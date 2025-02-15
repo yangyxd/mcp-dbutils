@@ -9,6 +9,10 @@ from ..base import DatabaseHandler, DatabaseError
 from .config import SqliteConfig
 
 class SqliteHandler(DatabaseHandler):
+    @property
+    def db_type(self) -> str:
+        return 'sqlite'
+
     def __init__(self, config_path: str, database: str, debug: bool = False):
         """Initialize SQLite handler
 
@@ -110,6 +114,7 @@ class SqliteHandler(DatabaseHandler):
                 formatted_results = [dict(zip(columns, row)) for row in results]
 
                 result_text = str({
+                    'type': self.db_type,
                     'columns': columns,
                     'rows': formatted_results,
                     'row_count': len(results)

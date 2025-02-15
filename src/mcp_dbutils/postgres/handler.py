@@ -8,6 +8,10 @@ from ..base import DatabaseHandler, DatabaseError
 from .config import PostgresConfig
 
 class PostgresHandler(DatabaseHandler):
+    @property
+    def db_type(self) -> str:
+        return 'postgres'
+
     def __init__(self, config_path: str, database: str, debug: bool = False):
         """Initialize PostgreSQL handler
 
@@ -128,6 +132,7 @@ class PostgresHandler(DatabaseHandler):
                     formatted_results = [dict(zip(columns, row)) for row in results]
 
                     result_text = str({
+                        'type': self.db_type,
                         'columns': columns,
                         'rows': formatted_results,
                         'row_count': len(results)
