@@ -31,7 +31,7 @@ async def test_list_tables(sqlite_db, mcp_config):
 async def test_execute_query(sqlite_db, mcp_config):
     """Test executing SELECT queries"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        yaml.dump(await mcp_config, tmp)
+        yaml.dump(mcp_config, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_sqlite") as handler:
@@ -55,7 +55,7 @@ async def test_execute_query(sqlite_db, mcp_config):
 async def test_non_select_query(sqlite_db, mcp_config):
     """Test that non-SELECT queries are rejected"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        yaml.dump(await mcp_config, tmp)
+        yaml.dump(mcp_config, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_sqlite") as handler:
@@ -66,7 +66,7 @@ async def test_non_select_query(sqlite_db, mcp_config):
 async def test_invalid_query(sqlite_db, mcp_config):
     """Test handling of invalid SQL queries"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        yaml.dump(await mcp_config, tmp)
+        yaml.dump(mcp_config, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_sqlite") as handler:
@@ -77,7 +77,7 @@ async def test_invalid_query(sqlite_db, mcp_config):
 async def test_connection_cleanup(sqlite_db, mcp_config):
     """Test that database connections are properly cleaned up"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        yaml.dump(await mcp_config, tmp)
+        yaml.dump(mcp_config, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_sqlite") as handler:
