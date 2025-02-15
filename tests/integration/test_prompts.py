@@ -17,11 +17,8 @@ async def test_prompts_capability(sqlite_db, mcp_config):
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
 
-        # Get initialization options
+        # Get initialization options and verify prompts capability
         init_options = server.server.create_initialization_options()
-        init_options.capabilities.prompts = types.PromptsCapability(list=True)
-
-        # Verify prompts capability is present
         assert init_options.capabilities is not None
         assert init_options.capabilities.prompts is not None
 
@@ -33,9 +30,9 @@ async def test_list_prompts(sqlite_db, mcp_config):
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
 
-        # Get prompts list directly from handler
-        result = await server.server.request_handlers["prompts/list"]()
+        # Test prompts list through server handler
+        result = await server.server.list_prompts()()
 
-        # Verify it's an empty list
+        # Verify empty list is returned
         assert isinstance(result, list)
         assert len(result) == 0
