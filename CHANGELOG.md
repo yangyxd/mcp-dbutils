@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.10] - 2025-02-15
+
+### Added
+- Resource monitoring system
+  - Added ResourceStats for resource usage tracking
+  - Implemented connection lifecycle monitoring
+  - Added error pattern analysis
+  - Added memory usage estimation
+
+### Changed
+- Enhanced database handlers
+  - Improved error tracking and reporting
+  - Added resource cleanup logging
+  - Standardized monitoring output format
+  - Implemented template method pattern for queries
+
+### Fixed
+- Unified resource monitoring across all database types
+- Added proper cleanup for monitoring resources
+
 ## [0.2.9] - 2025-02-15
 
 ### Changed
