@@ -14,19 +14,12 @@ from urllib.parse import urlparse
 pytest.register_assert_rewrite("tests")
 pytestmark = pytest.mark.asyncio
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the event loop for each test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
 def parse_postgres_url(url: str) -> Dict[str, str]:
     """Parse postgres URL into connection parameters"""
     # Remove postgres+psycopg2:// prefix if present
     if url.startswith('postgresql+psycopg2://'):
         url = url.replace('postgresql+psycopg2://', 'postgresql://')
-    
+
     parsed = urlparse(url)
     params = {
         'dbname': parsed.path[1:],  # Remove leading '/'
@@ -44,16 +37,16 @@ async def postgres_db() -> AsyncGenerator[Dict[str, str], None]:
     """
     postgres = PostgresContainer("postgres:15-alpine")
     postgres.start()
-    
+
     try:
         url = postgres.get_connection_url()
         # Get connection parameters from URL
         conn_params = parse_postgres_url(url)
-        
+
         # Create direct connection using psycopg2
         conn = psycopg2.connect(**conn_params)
         cur = conn.cursor()
-        
+
         # Create test data
         cur.execute("""
             CREATE TABLE users (
@@ -61,7 +54,7 @@ async def postgres_db() -> AsyncGenerator[Dict[str, str], None]:
                 name TEXT NOT NULL,
                 email TEXT UNIQUE
             );
-            
+
             INSERT INTO users (name, email) VALUES 
                 ('Alice', 'alice@test.com'),
                 ('Bob', 'bob@test.com');
@@ -69,7 +62,7 @@ async def postgres_db() -> AsyncGenerator[Dict[str, str], None]:
         conn.commit()
         cur.close()
         conn.close()
-        
+
         # Parse URL into connection parameters
         conn_params = parse_postgres_url(url)
         conn_info = {
@@ -77,7 +70,7 @@ async def postgres_db() -> AsyncGenerator[Dict[str, str], None]:
             **conn_params
         }
         yield conn_info
-    
+
     finally:
         postgres.stop()
 
@@ -88,7 +81,7 @@ async def sqlite_db() -> AsyncGenerator[Dict[str, str], None]:
     """
     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:
         db_path = Path(tmp.name)
-        
+
         # Create test database and data
         async with aiosqlite.connect(db_path) as db:
             await db.execute("""
@@ -104,13 +97,13 @@ async def sqlite_db() -> AsyncGenerator[Dict[str, str], None]:
                     ('Gadget', 19.99);
             """)
             await db.commit()
-        
+
         conn_info = {
             "type": "sqlite",
             "path": str(db_path)
         }
         yield conn_info
-        
+
         # Clean up
         try:
             db_path.unlink()
@@ -122,11 +115,9 @@ async def mcp_config(postgres_db, sqlite_db) -> Dict:
     """
     Generate MCP server configuration for testing.
     """
-    pg_config = await anext(postgres_db)
-    sqlite_config = await anext(sqlite_db)
     return {
         "databases": {
-            "test_pg": pg_config,
-            "test_sqlite": sqlite_config
+            "test_pg": postgres_db,
+            "test_sqlite": sqlite_db
         }
     }

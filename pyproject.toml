@@ -32,6 +32,3 @@ test = [
     "testcontainers>=3.7.0",
     "pytest-cov>=4.1.0"
 ]
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
