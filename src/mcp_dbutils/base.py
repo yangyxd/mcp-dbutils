@@ -102,7 +102,7 @@ class DatabaseServer:
                     raise ConfigurationError("Database configuration must include 'type' field")
 
                 db_type = db_config['type']
-                self.logger.debug(f"Creating handler for database type: {db_type}")
+                self.logger("debug", f"Creating handler for database type: {db_type}")
                 if db_type == 'sqlite':
                     from .sqlite.handler import SqliteHandler
                     handler = SqliteHandler(self.config_path, database, self.debug)
@@ -112,7 +112,7 @@ class DatabaseServer:
                 else:
                     raise ConfigurationError(f"Unsupported database type: {db_type}")
 
-                self.logger.debug(f"Handler created successfully for {database}")
+                self.logger("debug", f"Handler created successfully for {database}")
                 yield handler
             except yaml.YAMLError as e:
                 raise ConfigurationError(f"Invalid YAML configuration: {str(e)}")
@@ -120,7 +120,7 @@ class DatabaseServer:
                 raise ConfigurationError(f"Failed to import handler for {db_type}: {str(e)}")
             finally:
                 if handler:
-                    self.logger.debug(f"Cleaning up handler for {database}")
+                    self.logger("debug", f"Cleaning up handler for {database}")
                     await handler.cleanup()
 
     def _setup_handlers(self):
