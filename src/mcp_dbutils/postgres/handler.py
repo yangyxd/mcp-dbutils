@@ -143,7 +143,7 @@ class PostgresHandler(DatabaseHandler):
                 finally:
                     cur.execute("ROLLBACK")
         except psycopg2.Error as e:
-            error_msg = f"Query execution failed: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            error_msg = f"[{self.db_type}] Query execution failed: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             raise DatabaseError(error_msg)
         finally:
             if conn:

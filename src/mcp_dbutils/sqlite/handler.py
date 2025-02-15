@@ -124,7 +124,7 @@ class SqliteHandler(DatabaseHandler):
                 return result_text
 
         except sqlite3.Error as e:
-            error_msg = f"Query execution failed: {str(e)}"
+            error_msg = f"[{self.db_type}] Query execution failed: {str(e)}"
             raise DatabaseError(error_msg)
 
     async def cleanup(self):
