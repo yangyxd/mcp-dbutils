@@ -1,5 +1,17 @@
 """Database server base class"""
 
+class DatabaseError(Exception):
+    """Base exception for database errors"""
+    pass
+
+class ConfigurationError(DatabaseError):
+    """Configuration related errors"""
+    pass
+
+class ConnectionError(DatabaseError):
+    """Connection related errors"""
+    pass
+
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, AsyncContextManager
 from contextlib import asynccontextmanager
@@ -77,28 +89,39 @@ class DatabaseServer:
         with open(self.config_path, 'r') as f:
             config = yaml.safe_load(f)
             if not config or 'databases' not in config:
-                raise ValueError("Configuration file must contain 'databases' section")
+                raise ConfigurationError("Configuration file must contain 'databases' section")
             if database not in config['databases']:
                 available_dbs = list(config['databases'].keys())
-                raise ValueError(f"Database configuration not found: {database}. Available configurations: {available_dbs}")
+                raise ConfigurationError(f"Database configuration not found: {database}. Available configurations: {available_dbs}")
 
             db_config = config['databases'][database]
 
-            handler = None
             try:
-                # Create appropriate handler based on configuration
-                if 'path' in db_config:
+                if 'type' not in db_config:
+                    raise ConfigurationError("Database configuration must include 'type' field")
+
+                db_type = db_config['type']
+                self.log.debug(f"Creating handler for database type: {db_type}")
+
+                handler = None
+                if db_type == 'sqlite':
                     from .sqlite.handler import SqliteHandler
                     handler = SqliteHandler(self.config_path, database, self.debug)
-                elif 'dbname' in db_config or 'host' in db_config:
+                elif db_type == 'postgres':
                     from .postgres.handler import PostgresHandler
                     handler = PostgresHandler(self.config_path, database, self.debug)
                 else:
-                    raise ValueError("Cannot determine database type, missing required parameters in configuration")
+                    raise ConfigurationError(f"Unsupported database type: {db_type}")
 
+                self.log.debug(f"Handler created successfully for {database}")
                 yield handler
+            except yaml.YAMLError as e:
+                raise ConfigurationError(f"Invalid YAML configuration: {str(e)}")
+            except ImportError as e:
+                raise ConfigurationError(f"Failed to import handler for {db_type}: {str(e)}")
             finally:
                 if handler:
+                    self.log.debug(f"Cleaning up handler for {database}")
                     await handler.cleanup()
 
     def _setup_handlers(self):
@@ -116,11 +139,11 @@ class DatabaseServer:
         @self.server.read_resource()
         async def handle_read_resource(uri: str, arguments: dict | None = None) -> str:
             if not arguments or 'database' not in arguments:
-                raise ValueError("Database configuration name must be specified")
+                raise ConfigurationError("Database configuration name must be specified")
 
             parts = uri.split('/')
             if len(parts) < 3:
-                raise ValueError("Invalid resource URI")
+                raise ConfigurationError("Invalid resource URI format")
 
             database = arguments['database']
             table_name = parts[-2]  # URI format: xxx/table_name/schema
@@ -154,18 +177,18 @@ class DatabaseServer:
         @self.server.call_tool()
         async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
             if name != "query":
-                raise ValueError(f"Unknown tool: {name}")
+                raise ConfigurationError(f"Unknown tool: {name}")
 
             if "database" not in arguments:
-                raise ValueError("Database configuration name must be specified")
+                raise ConfigurationError("Database configuration name must be specified")
 
             sql = arguments.get("sql", "").strip()
             if not sql:
-                raise ValueError("SQL query cannot be empty")
+                raise ConfigurationError("SQL query cannot be empty")
 
             # Only allow SELECT statements
             if not sql.lower().startswith("select"):
-                raise ValueError("Only SELECT queries are supported")
+                raise ConfigurationError("Only SELECT queries are supported for security reasons")
 
             database = arguments["database"]
             async with self.get_handler(database) as handler:
