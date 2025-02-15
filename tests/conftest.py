@@ -1,5 +1,6 @@
 import os
 import pytest
+from pytest_asyncio import fixture
 import asyncio
 import tempfile
 from pathlib import Path
@@ -36,7 +37,7 @@ def parse_postgres_url(url: str) -> Dict[str, str]:
     }
     return {k: v for k, v in params.items() if v is not None}
 
-@pytest.fixture(scope="function")
+@fixture(scope="function")
 async def postgres_db() -> AsyncGenerator[Dict[str, str], None]:
     """
     Create a temporary PostgreSQL database for testing.
@@ -80,7 +81,7 @@ async def postgres_db() -> AsyncGenerator[Dict[str, str], None]:
     finally:
         postgres.stop()
 
-@pytest.fixture(scope="function")
+@fixture(scope="function")
 async def sqlite_db() -> AsyncGenerator[Dict[str, str], None]:
     """
     Create a temporary SQLite database for testing.
@@ -116,7 +117,7 @@ async def sqlite_db() -> AsyncGenerator[Dict[str, str], None]:
         except FileNotFoundError:
             pass
 
-@pytest.fixture(scope="function")
+@fixture(scope="function")
 async def mcp_config(postgres_db, sqlite_db) -> Dict:
     """
     Generate MCP server configuration for testing.
