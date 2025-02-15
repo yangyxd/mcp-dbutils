@@ -20,8 +20,8 @@ def create_logger(name: str, is_debug: bool = False) -> Callable:
         if level == "debug" and not is_debug:
             return
 
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-        log_message = f"[{timestamp}] [{name}] [{level}] {message}"
+        timestamp = datetime.utcnow().isoformat(timespec='microseconds') + 'Z'
+        log_message = f"{timestamp} [{name}] [{level}] {message}"
 
         # 始终输出到stderr
         print(log_message, file=sys.stderr, flush=True)
