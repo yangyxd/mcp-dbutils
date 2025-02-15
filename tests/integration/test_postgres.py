@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 import yaml
-from mcp_dbutils.base import DatabaseServer
+from mcp_dbutils.base import DatabaseServer, ConfigurationError, DatabaseError
 
 @pytest.mark.asyncio
 async def test_list_tables(postgres_db, mcp_config):
@@ -16,7 +16,7 @@ async def test_list_tables(postgres_db, mcp_config):
             tables = await handler.get_tables()
             table_names = [table.name.replace(" schema", "") for table in tables]
             assert "users" in table_names
-            
+
             # Check schema information
             schema_str = await handler.get_schema("users")
             schema = eval(schema_str)
@@ -41,7 +41,7 @@ async def test_execute_query(postgres_db, mcp_config):
                 assert len(result["rows"]) == 2
                 assert result["rows"][0]["name"] == "Alice"
                 assert result["rows"][1]["name"] == "Bob"
-                
+
                 # SELECT with WHERE clause
                 result_str = await handler.execute_query(
                     "SELECT * FROM users WHERE email = 'alice@test.com'"
@@ -58,7 +58,7 @@ async def test_non_select_query(postgres_db, mcp_config):
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_pg") as handler:
-            with pytest.raises(Exception, match="cannot execute DELETE in a read-only transaction"):
+            with pytest.raises(DatabaseError, match="cannot execute DELETE in a read-only transaction"):
                 await handler.execute_query("DELETE FROM users")
 
 @pytest.mark.asyncio
@@ -69,7 +69,7 @@ async def test_invalid_query(postgres_db, mcp_config):
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_pg") as handler:
-            with pytest.raises(Exception):
+            with pytest.raises(DatabaseError):
                 await handler.execute_query("SELECT * FROM nonexistent_table")
 
 @pytest.mark.asyncio
