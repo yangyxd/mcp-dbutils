@@ -2,6 +2,7 @@
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/donghao1393/mcp-dbutils)
 ![PyPI version](https://img.shields.io/pypi/v/mcp-dbutils)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/donghao1393/bdd0a63ec2a816539ff8c136ceb41e48/raw/coverage.json)](https://github.com/donghao1393/mcp-dbutils/actions)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![License](https://img.shields.io/github/license/donghao1393/mcp-dbutils)
 [![smithery badge](https://smithery.ai/badge/@donghao1393/mcp-dbutils)](https://smithery.ai/server/@donghao1393/mcp-dbutils)

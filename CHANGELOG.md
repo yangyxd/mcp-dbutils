@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Added GitHub Actions workflow for automated testing
 - Added PostgreSQL service in CI environment
 - Added detailed test reporting with coverage in CI
+- Added coverage badge to README using dynamic-badges-action
 
 ## [0.2.6] - 2025-02-12
 

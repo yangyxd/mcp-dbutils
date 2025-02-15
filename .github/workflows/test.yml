@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15-alpine
@@ -25,26 +25,51 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install uv
         uses: astral-sh/setup-uv@v4
-        
+
       - name: Set up Python
         run: uv python install
-      
+
       - name: Create and activate venv
         run: |
           uv venv
           . .venv/bin/activate
-      
+
       - name: Install dependencies
         run: uv pip install -e ".[test]"
-      
+
       - name: Run tests with coverage
+        id: tests
         run: |
           uv run pytest \
             -v \
             --cov=src/mcp_dbutils \
             --cov-report=html \
             --cov-report=term-missing \
+            --cov-report=json:coverage.json \
             tests/
+
+      - name: Calculate coverage percentage
+        id: calc_coverage
+        run: |
+          COVERAGE=$(jq '.totals.percent_covered' coverage.json)
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          if (( $(echo "$COVERAGE >= 90" | bc -l) )); then
+            echo "color=green" >> $GITHUB_OUTPUT
+          elif (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            echo "color=yellow" >> $GITHUB_OUTPUT
+          else
+            echo "color=red" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Coverage Badge
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: bdd0a63ec2a816539ff8c136ceb41e48
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.calc_coverage.outputs.percentage }}%
+          color: ${{ steps.calc_coverage.outputs.color }}
