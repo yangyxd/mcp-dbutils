@@ -51,6 +51,10 @@ class DatabaseHandler(ABC):
         pass
 
     @abstractmethod
+    async def _execute_query(self, sql: str) -> str:
+        """Internal query execution method to be implemented by subclasses"""
+        pass
+
     async def execute_query(self, sql: str) -> str:
         """Execute SQL query"""
         try:
@@ -63,11 +67,6 @@ class DatabaseHandler(ABC):
             self.stats.record_error(e.__class__.__name__)
             self.log("error", f"Query error - {str(e)}\nResource stats: {json.dumps(self.stats.to_dict())}")
             raise
-
-    @abstractmethod
-    async def _execute_query(self, sql: str) -> str:
-        """Internal query execution method to be implemented by subclasses"""
-        pass
 
     @abstractmethod
     async def cleanup(self):
