@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.11] - 2025-02-15
+
+### Added
+- Added basic prompts support
+  - Implemented empty prompts/list handler
+  - Added prompts capability configuration
+  - Added integration tests for prompts
+
 ## [0.2.10] - 2025-02-15
 
 ### Added

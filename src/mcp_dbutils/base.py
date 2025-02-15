@@ -88,6 +88,15 @@ class DatabaseServer:
         self.logger = create_logger("db-server", debug)
         self.server = Server("database-server")
         self._setup_handlers()
+        self._setup_prompts()
+
+    def _setup_prompts(self):
+        """Setup prompts handlers"""
+        async def handle_list_prompts() -> list[types.Prompt]:
+            """Return empty list of prompts for now"""
+            return []
+
+        self.server.request_handlers["prompts/list"] = handle_list_prompts
 
     @asynccontextmanager
     async def get_handler(self, database: str) -> AsyncContextManager[DatabaseHandler]:
@@ -217,8 +226,10 @@ class DatabaseServer:
     async def run(self):
         """Run server"""
         async with mcp.server.stdio.stdio_server() as streams:
+            init_options = self.server.create_initialization_options()
+            init_options.capabilities.prompts = types.PromptsCapability(list=True)
             await self.server.run(
                 streams[0],
                 streams[1],
-                self.server.create_initialization_options()
+                init_options
             )
