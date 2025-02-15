@@ -5,7 +5,7 @@ from pathlib import Path
 from contextlib import closing
 import mcp.types as types
 
-from ..base import DatabaseHandler
+from ..base import DatabaseHandler, DatabaseError
 from .config import SqliteConfig
 
 class SqliteHandler(DatabaseHandler):
@@ -88,6 +88,19 @@ class SqliteHandler(DatabaseHandler):
 
     async def execute_query(self, sql: str) -> str:
         """Execute SQL query"""
+        # Check for non-SELECT queries
+        sql_lower = sql.lower().strip()
+        if not sql_lower.startswith('select'):
+            error_msg = "cannot execute DELETE statement"
+            if sql_lower.startswith('delete'):
+                error_msg = "cannot execute DELETE statement"
+            elif sql_lower.startswith('update'):
+                error_msg = "cannot execute UPDATE statement"
+            elif sql_lower.startswith('insert'):
+                error_msg = "cannot execute INSERT statement"
+            self.log("error", error_msg)
+            raise DatabaseError(error_msg)
+
         try:
             with closing(self._get_connection()) as conn:
                 self.log("info", f"Executing query: {sql}")
@@ -109,7 +122,7 @@ class SqliteHandler(DatabaseHandler):
         except sqlite3.Error as e:
             error_msg = f"Query execution failed: {str(e)}"
             self.log("error", error_msg)
-            raise
+            raise DatabaseError(error_msg)
 
     async def cleanup(self):
         """Cleanup resources"""

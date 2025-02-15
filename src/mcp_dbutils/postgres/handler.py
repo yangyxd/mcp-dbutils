@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 import mcp.types as types
 
-from ..base import DatabaseHandler
+from ..base import DatabaseHandler, DatabaseError
 from .config import PostgresConfig
 
 class PostgresHandler(DatabaseHandler):
@@ -52,7 +52,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to get table list: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.log("error", error_msg)
-            raise
+            raise DatabaseError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -105,7 +105,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to read table schema: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.log("error", error_msg)
-            raise
+            raise DatabaseError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -139,7 +139,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Query execution failed: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.log("error", error_msg)
-            raise
+            raise DatabaseError(error_msg)
         finally:
             if conn:
                 conn.close()
