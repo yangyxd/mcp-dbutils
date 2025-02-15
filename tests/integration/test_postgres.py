@@ -7,7 +7,7 @@ from mcp_dbutils.base import DatabaseServer
 async def test_list_tables(postgres_db, mcp_config):
     """Test listing tables in PostgreSQL database"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        config_data = await mcp_config
+        config_data = mcp_config
         print("PostgreSQL config:", config_data)
         yaml.dump(config_data, tmp)
         tmp.flush()
@@ -31,7 +31,7 @@ async def test_list_tables(postgres_db, mcp_config):
 async def test_execute_query(postgres_db, mcp_config):
     """Test executing SELECT queries"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        yaml.dump(await mcp_config, tmp)
+        yaml.dump(mcp_config, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_pg") as handler:

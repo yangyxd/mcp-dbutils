@@ -8,7 +8,7 @@ from mcp_dbutils.base import DatabaseServer
 async def test_list_tables(sqlite_db, mcp_config):
     """Test listing tables in SQLite database"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
-        yaml.dump(await mcp_config, tmp)
+        yaml.dump(mcp_config, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
         async with server.get_handler("test_sqlite") as handler:
