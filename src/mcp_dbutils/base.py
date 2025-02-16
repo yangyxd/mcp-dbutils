@@ -26,6 +26,9 @@ from mcp.shared.session import RequestResponder
 from .log import create_logger
 from .stats import ResourceStats
 
+# 获取包信息用于日志命名
+pkg_meta = metadata("mcp-dbutils")
+
 class DatabaseHandler(ABC):
     """Abstract base class defining common interface for database handlers"""
 
@@ -40,7 +43,7 @@ class DatabaseHandler(ABC):
         self.config_path = config_path
         self.database = database
         self.debug = debug
-        self.log = create_logger(f"db-handler-{database}", debug)
+        self.log = create_logger(f"{pkg_meta['Name']}.handler.{database}", debug)
         self.stats = ResourceStats()
 
     @property
@@ -94,7 +97,7 @@ class DatabaseServer:
         """
         self.config_path = config_path
         self.debug = debug
-        self.logger = create_logger("db-server", debug)
+        self.logger = create_logger(f"{pkg_meta['Name']}.server", debug)
         pkg_meta = metadata("mcp-dbutils")
         self.server = Server(
             name=pkg_meta["Name"],

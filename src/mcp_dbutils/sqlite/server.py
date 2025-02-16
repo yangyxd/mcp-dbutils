@@ -5,10 +5,14 @@ from pathlib import Path
 from contextlib import closing
 from typing import Optional, List
 import mcp.types as types
+from importlib.metadata import metadata
 
 from ..base import DatabaseServer
 from ..log import create_logger
 from .config import SqliteConfig
+
+# 获取包信息用于日志命名
+pkg_meta = metadata("mcp-dbutils")
 
 class SqliteServer(DatabaseServer):
     def __init__(self, config: SqliteConfig, config_path: Optional[str] = None):
@@ -17,10 +21,10 @@ class SqliteServer(DatabaseServer):
         Args:
             config: SQLite 配置
         """
-        super().__init__("sqlite-server", config.debug)
+        super().__init__(config_path, config.debug)
         self.config = config
         self.config_path = config_path
-        self.log = create_logger("sqlite", config.debug)
+        self.log = create_logger(f"{pkg_meta['Name']}.db.sqlite", config.debug)
 
         # 确保数据库目录存在
         db_file = Path(self.config.absolute_path)

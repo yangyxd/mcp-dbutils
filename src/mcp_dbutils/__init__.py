@@ -8,12 +8,16 @@ import os
 import sys
 from pathlib import Path
 import yaml
+from importlib.metadata import metadata
 
 from .log import create_logger
 from .base import DatabaseServer
 
+# 获取包信息
+pkg_meta = metadata("mcp-dbutils")
+
 # 创建全局logger
-log = create_logger("mcp-dbutils")
+log = create_logger(pkg_meta["Name"])
 
 async def run_server():
     """服务器运行逻辑"""
@@ -28,7 +32,7 @@ async def run_server():
 
     # 更新logger的debug状态
     global log
-    log = create_logger("mcp-dbutils", debug)
+    log = create_logger(pkg_meta["Name"], debug)
 
     log("info", f"MCP Database Utilities Service v{__version__}")
     if debug:

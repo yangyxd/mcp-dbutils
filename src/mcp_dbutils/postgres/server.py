@@ -3,9 +3,13 @@ import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from typing import Optional, List
 import mcp.types as types
+from importlib.metadata import metadata
 from ..base import DatabaseServer
 from ..log import create_logger
 from .config import PostgresConfig
+
+# 获取包信息用于日志命名
+pkg_meta = metadata("mcp-dbutils")
 class PostgresServer(DatabaseServer):
     def __init__(self, config: PostgresConfig, config_path: Optional[str] = None):
         """初始化PostgreSQL服务器
@@ -13,10 +17,10 @@ class PostgresServer(DatabaseServer):
             config: 数据库配置
             config_path: 配置文件路径(可选)
         """
-        super().__init__("postgres-server", config.debug)
+        super().__init__(config_path, config.debug)
         self.config = config
         self.config_path = config_path
-        self.log = create_logger("postgres", config.debug)
+        self.log = create_logger(f"{pkg_meta['Name']}.db.postgres", config.debug)
         # 创建连接池
         try:
             conn_params = config.get_connection_params()
