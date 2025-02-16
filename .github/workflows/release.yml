@@ -36,11 +36,14 @@ jobs:
         uses: python-semantic-release/python-semantic-release@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          build: false
 
       - name: Build Package
         if: steps.version.outputs.released == 'true'
-        run: uv build
-
+        run: |
+          which uv
+          uv build
+        
       - name: Publish to PyPI
         if: steps.version.outputs.released == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
