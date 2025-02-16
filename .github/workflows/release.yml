@@ -34,8 +34,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: true
-          build: false
-          
-      - name: Build
-        if: steps.version.outputs.released == 'true'
-        run: uv build
+          build: true
+          upload_to_pypi: true
