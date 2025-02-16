@@ -20,6 +20,8 @@ import yaml
 from mcp.server import Server, NotificationOptions
 import mcp.server.stdio
 import mcp.types as types
+from mcp.shared.session import RequestResponder
+
 from .log import create_logger
 from .stats import ResourceStats
 
@@ -92,16 +94,24 @@ class DatabaseServer:
         self.config_path = config_path
         self.debug = debug
         self.logger = create_logger("db-server", debug)
-        self.server = Server("database-server")
+        self.server = Server(
+            name="database-server",
+            version="1.0.0"
+        )
         self._setup_handlers()
         self._setup_prompts()
 
     def _setup_prompts(self):
         """Setup prompts handlers"""
         @self.server.list_prompts()
-        async def handle_list_prompts(arguments: dict | None = None) -> list[types.Prompt]:
-            """Return empty list of prompts for now"""
-            return []
+        async def handle_list_prompts() -> list[types.Prompt]:
+            """Handle prompts/list request"""
+            try:
+                self.logger("debug", "Handling list_prompts request")
+                return []
+            except Exception as e:
+                self.logger("error", f"Error in list_prompts: {str(e)}")
+                raise
 
     @asynccontextmanager
     async def get_handler(self, database: str) -> AsyncContextManager[DatabaseHandler]:

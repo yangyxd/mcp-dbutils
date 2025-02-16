@@ -2,13 +2,17 @@ import pytest
 import tempfile
 import yaml
 from mcp_dbutils.base import DatabaseServer, ConfigurationError, DatabaseError
+from mcp_dbutils.log import create_logger
+
+# 创建测试用的 logger
+logger = create_logger("test-postgres", True)  # debug=True 以显示所有日志
 
 @pytest.mark.asyncio
 async def test_list_tables(postgres_db, mcp_config):
     """Test listing tables in PostgreSQL database"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
         config_data = mcp_config
-        print("PostgreSQL config:", config_data)
+        logger("debug", f"PostgreSQL config: {config_data}")
         yaml.dump(config_data, tmp)
         tmp.flush()
         server = DatabaseServer(config_path=tmp.name)
