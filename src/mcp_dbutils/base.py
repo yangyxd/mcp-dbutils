@@ -97,8 +97,9 @@ class DatabaseServer:
         """
         self.config_path = config_path
         self.debug = debug
-        self.logger = create_logger(f"{pkg_meta['Name']}.server", debug)
+        # 获取包信息用于服务器配置
         pkg_meta = metadata("mcp-dbutils")
+        self.logger = create_logger(f"{pkg_meta['Name']}.server", debug)
         self.server = Server(
             name=pkg_meta["Name"],
             version=pkg_meta["Version"]
