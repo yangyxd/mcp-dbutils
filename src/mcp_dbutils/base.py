@@ -17,6 +17,7 @@ from typing import Any, List, Optional, AsyncContextManager
 from contextlib import asynccontextmanager
 import json
 import yaml
+from importlib.metadata import metadata
 from mcp.server import Server, NotificationOptions
 import mcp.server.stdio
 import mcp.types as types
@@ -94,9 +95,10 @@ class DatabaseServer:
         self.config_path = config_path
         self.debug = debug
         self.logger = create_logger("db-server", debug)
+        pkg_meta = metadata("mcp-dbutils")
         self.server = Server(
-            name="database-server",
-            version="1.0.0"
+            name=pkg_meta["Name"],
+            version=pkg_meta["Version"]
         )
         self._setup_handlers()
         self._setup_prompts()
