@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-03-01)
+
+### Features
+
+- **config**: Add JDBC URL support for PostgreSQL
+  ([#3](https://github.com/donghao1393/mcp-dbutils/pull/3),
+  [`4f148f3`](https://github.com/donghao1393/mcp-dbutils/commit/4f148f31d5dc623b8b39201f0270d8f523e65238))
+
+- Add JDBC URL parsing with strict security measures - Require credentials to be provided separately
+  - Implement validation for all required parameters - Add comprehensive test coverage
+
+Closes #2
+
+
 ## v0.3.0 (2025-02-16)
 
 ### Bug Fixes
