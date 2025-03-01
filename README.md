@@ -126,7 +126,7 @@ The project requires a YAML configuration file, specified via the `--config` par
 
 ```yaml
 databases:
-  # PostgreSQL example (when using Docker)
+  # Standard PostgreSQL configuration example
   my_postgres:
     type: postgres
     dbname: test_db
@@ -136,12 +136,23 @@ databases:
     # host: 172.17.0.1         # For Linux (docker0 IP)
     port: 5432
 
+  # PostgreSQL with JDBC URL example
+  my_postgres_jdbc:
+    type: postgres
+    jdbc_url: jdbc:postgresql://host.docker.internal:5432/test_db
+    user: postgres            # Credentials must be provided separately
+    password: secret          # Not included in JDBC URL for security
+
   # SQLite example (when using Docker)
   my_sqlite:
     type: sqlite
     path: /app/sqlite.db       # Mapped path inside container
     password: optional_password # optional
 ```
+
+The configuration supports two formats for PostgreSQL:
+1. Standard configuration with individual parameters
+2. JDBC URL configuration with separate credentials (recommended for better compatibility)
 
 ### Debug Mode
 Set environment variable `MCP_DEBUG=1` to enable debug mode for detailed logging output.

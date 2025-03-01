@@ -110,7 +110,7 @@ docker run -i --rm \
 
 ```yaml
 databases:
-  # PostgreSQL配置示例（使用Docker）
+  # PostgreSQL标准配置示例
   my_postgres:
     type: postgres
     dbname: test_db
@@ -120,12 +120,23 @@ databases:
     # host: 172.17.0.1         # Linux系统使用（docker0网络IP）
     port: 5432
 
+  # PostgreSQL JDBC URL配置示例
+  my_postgres_jdbc:
+    type: postgres
+    jdbc_url: jdbc:postgresql://host.docker.internal:5432/test_db
+    user: postgres            # 认证信息必须单独提供
+    password: secret          # 出于安全考虑，不包含在JDBC URL中
+
   # SQLite配置示例（使用Docker）
   my_sqlite:
     type: sqlite
     path: /app/sqlite.db       # 容器内的映射路径
     password: optional_password # 可选
 ```
+
+PostgreSQL配置支持两种格式：
+1. 标准配置：使用独立的参数配置
+2. JDBC URL配置：使用JDBC URL并单独提供认证信息（推荐，兼容性更好）
 
 ### 调试模式
 设置环境变量 `MCP_DEBUG=1` 启用调试模式，可以看到详细的日志输出。
