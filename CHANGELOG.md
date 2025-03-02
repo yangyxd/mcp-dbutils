@@ -1,6 +1,30 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-03-02)
+
+### Documentation
+
+- Add JDBC URL configuration documentation
+  ([`a1b5f4b`](https://github.com/donghao1393/mcp-dbutils/commit/a1b5f4b424cec0df239bed65705aaac7c3e9072a))
+
+- Add JDBC URL configuration examples to English and Chinese docs - Document secure credential
+  handling approach - Update configuration format descriptions
+
+Part of feature #2
+
+### Features
+
+- **config**: Add JDBC URL support for SQLite
+  ([#5](https://github.com/donghao1393/mcp-dbutils/pull/5),
+  [`9feb1e8`](https://github.com/donghao1393/mcp-dbutils/commit/9feb1e8c7e38a8e4e3c0f63c81a72f4a4edd05b5))
+
+- Add JDBC URL parsing for SQLite configuration - Support SQLite specific URL format and parameters
+  - Keep credentials separate from URL - Complete test coverage for new functionality
+
+Part of #4
+
+
 ## v0.4.0 (2025-03-01)
 
 ### Features
