@@ -17,6 +17,7 @@ MCP Database Utilities is a unified database access service that supports multip
 - Support for multiple database configurations
 - Secure read-only query execution
 - Table structure and schema information retrieval
+- Database tables listing via MCP tools
 - Intelligent connection management and resource cleanup
 - Debug mode support
 
@@ -270,8 +271,23 @@ except Exception as e:
 ### DatabaseServer
 Core server class providing:
 - Resource list retrieval
-- Tool call handling
+- Tool call handling (list_tables, query)
 - Database handler management
+
+### MCP Tools
+
+#### list_tables
+Lists all tables in the specified database.
+- Parameters:
+  * database: Database configuration name
+- Returns: Text content with a list of table names
+
+#### query
+Executes a SQL query on the specified database.
+- Parameters:
+  * database: Database configuration name
+  * sql: SQL query to execute (SELECT only)
+- Returns: Query results in a formatted text
 
 ### DatabaseHandler
 Abstract base class defining interfaces:
