@@ -1,6 +1,58 @@
 # CHANGELOG
 
 
+## v0.6.0 (2025-03-08)
+
+### Documentation
+
+- Add SQLite JDBC URL configuration documentation
+  ([#6](https://github.com/donghao1393/mcp-dbutils/pull/6),
+  [`7d7ca8b`](https://github.com/donghao1393/mcp-dbutils/commit/7d7ca8bc7d4047a6c45dc3b8c6106e1fcbdd16d0))
+
+- Add SQLite JDBC URL examples and explanation - Update configuration format description - Keep
+  Chinese and English documentation in sync
+
+Part of #4
+
+### Features
+
+- **tool**: Add list_tables tool for database exploration
+  ([#8](https://github.com/donghao1393/mcp-dbutils/pull/8),
+  [`6808c08`](https://github.com/donghao1393/mcp-dbutils/commit/6808c0868c8959450a9cfdcdf79a0af53bf22933))
+
+* feat(tool): add list_tables tool for database exploration
+
+This commit adds a new list_tables tool that allows LLMs to explore database tables without knowing
+  the specific database type, leveraging the existing get_tables abstraction.
+
+Fixes #7
+
+* test(tool): add integration tests for list_tables tool
+
+* test: add integration tests for list_tables tool
+
+This commit: - Adds test for list_tables tool functionality with both PostgreSQL and SQLite - Adds
+  test for error cases - Uses proper ClientSession setup for MCP testing
+
+* fix(test): update test assertions for list_tables tool errors
+
+- Fix incorrect error handling assertions - Fix indentation issues in test file - Use try-except
+  pattern for error testing
+
+* fix(test): update error handling in list_tables tests
+
+- Use MCP Error type instead of ConfigurationError - Fix indentation issues - Improve error
+  assertions
+
+* fix(test): correct McpError import path
+
+* fix(test): use correct import path for McpError
+
+* fix(test): use try-except for error testing instead of pytest.raises
+
+* test: skip unstable error test for list_tables tool
+
+
 ## v0.5.0 (2025-03-02)
 
 ### Documentation
