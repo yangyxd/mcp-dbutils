@@ -260,13 +260,13 @@ except Exception as e:
 
 ### MCP工具
 
-#### list_tables
+#### dbutils-list-tables
 列出指定数据库中的所有表。
 - 参数：
   * database: 数据库配置名称
 - 返回：包含表名列表的文本内容
 
-#### query
+#### dbutils-run-query
 在指定数据库上执行SQL查询。
 - 参数：
   * database: 数据库配置名称

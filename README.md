@@ -276,13 +276,13 @@ Core server class providing:
 
 ### MCP Tools
 
-#### list_tables
+#### dbutils-list-tables
 Lists all tables in the specified database.
 - Parameters:
   * database: Database configuration name
 - Returns: Text content with a list of table names
 
-#### query
+#### dbutils-run-query
 Executes a SQL query on the specified database.
 - Parameters:
   * database: Database configuration name
