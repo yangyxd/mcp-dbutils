@@ -7,15 +7,15 @@ from typing import Optional, List
 import mcp.types as types
 from importlib.metadata import metadata
 
-from ..base import DatabaseServer
+from ..base import ConnectionServer
 from ..log import create_logger
-from .config import SqliteConfig
+from .config import SQLiteConfig
 
 # 获取包信息用于日志命名
 pkg_meta = metadata("mcp-dbutils")
 
-class SqliteServer(DatabaseServer):
-    def __init__(self, config: SqliteConfig, config_path: Optional[str] = None):
+class SQLiteServer(ConnectionServer):
+    def __init__(self, config: SQLiteConfig, config_path: Optional[str] = None):
         """初始化 SQLite 服务器
 
         Args:
@@ -32,13 +32,13 @@ class SqliteServer(DatabaseServer):
 
         # 测试连接
         try:
-            self.log("debug", f"正在连接数据库: {self.config.get_masked_connection_info()}")
+            self.log("debug", f"正在连接: {self.config.get_masked_connection_info()}")
             connection_params = self.config.get_connection_params()
             with closing(sqlite3.connect(**connection_params)) as conn:
                 conn.row_factory = sqlite3.Row
-            self.log("info", "数据库连接测试成功")
+            self.log("info", "连接测试成功")
         except sqlite3.Error as e:
-            self.log("error", f"数据库连接失败: {str(e)}")
+            self.log("error", f"连接失败: {str(e)}")
             raise
 
     def _get_connection(self):
@@ -53,13 +53,13 @@ class SqliteServer(DatabaseServer):
         use_default = True
         conn = None
         try:
-            database = arguments.get("database")
-            if database and self.config_path:
-                # 使用指定的数据库配置
-                config = SqliteConfig.from_yaml(self.config_path, database)
+            connection = arguments.get("connection")
+            if connection and self.config_path:
+                # 使用指定的数据库连接
+                config = SQLiteConfig.from_yaml(self.config_path, connection)
                 connection_params = config.get_connection_params()
                 masked_params = config.get_masked_connection_info()
-                self.log("info", f"使用配置 {database} 连接数据库: {masked_params}")
+                self.log("info", f"使用配置 {connection} 连接: {masked_params}")
                 conn = sqlite3.connect(**connection_params)
                 conn.row_factory = sqlite3.Row
                 use_default = False
@@ -126,9 +126,9 @@ class SqliteServer(DatabaseServer):
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "database": {
+                        "connection": {
                             "type": "string",
-                            "description": "数据库配置名称（可选）"
+                            "description": "数据库连接名称（可选）"
                         },
                         "sql": {
                             "type": "string",
@@ -156,13 +156,13 @@ class SqliteServer(DatabaseServer):
         use_default = True
         conn = None
         try:
-            database = arguments.get("database")
-            if database and self.config_path:
-                # 使用指定的数据库配置
-                config = SqliteConfig.from_yaml(self.config_path, database)
+            connection = arguments.get("connection")
+            if connection and self.config_path:
+                # 使用指定的数据库连接
+                config = SQLiteConfig.from_yaml(self.config_path, connection)
                 connection_params = config.get_connection_params()
                 masked_params = config.get_masked_connection_info()
-                self.log("info", f"使用配置 {database} 连接数据库: {masked_params}")
+                self.log("info", f"使用配置 {connection} 连接: {masked_params}")
                 conn = sqlite3.connect(**connection_params)
                 conn.row_factory = sqlite3.Row
                 use_default = False
@@ -180,7 +180,7 @@ class SqliteServer(DatabaseServer):
 
                 result_text = str({
                     'type': 'sqlite',
-                    'config_name': database or 'default',
+                    'config_name': connection or 'default',
                     'query_result': {
                         'columns': columns,
                         'rows': formatted_results,
@@ -194,7 +194,7 @@ class SqliteServer(DatabaseServer):
         except sqlite3.Error as e:
             error_msg = str({
                 'type': 'sqlite',
-                'config_name': database or 'default',
+                'config_name': connection or 'default',
                 'error': f"查询执行失败: {str(e)}"
             })
             self.log("error", error_msg)

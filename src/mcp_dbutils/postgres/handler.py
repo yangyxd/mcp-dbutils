@@ -1,31 +1,31 @@
-"""PostgreSQL database handler implementation"""
+"""PostgreSQL connection handler implementation"""
 
 import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 import mcp.types as types
 
-from ..base import DatabaseHandler, DatabaseError
-from .config import PostgresConfig
+from ..base import ConnectionHandler, ConnectionHandlerError
+from .config import PostgreSQLConfig
 
-class PostgresHandler(DatabaseHandler):
+class PostgreSQLHandler(ConnectionHandler):
     @property
     def db_type(self) -> str:
         return 'postgres'
 
-    def __init__(self, config_path: str, database: str, debug: bool = False):
+    def __init__(self, config_path: str, connection: str, debug: bool = False):
         """Initialize PostgreSQL handler
 
         Args:
             config_path: Path to configuration file
-            database: Database configuration name
+            connection: Database connection name
             debug: Enable debug mode
         """
-        super().__init__(config_path, database, debug)
-        self.config = PostgresConfig.from_yaml(config_path, database)
+        super().__init__(config_path, connection, debug)
+        self.config = PostgreSQLConfig.from_yaml(config_path, connection)
 
         # No connection pool creation during initialization
         masked_params = self.config.get_masked_connection_info()
-        self.log("debug", f"Configuring database with parameters: {masked_params}")
+        self.log("debug", f"Configuring connection with parameters: {masked_params}")
         self.pool = None
 
     async def get_tables(self) -> list[types.Resource]:
@@ -47,16 +47,16 @@ class PostgresHandler(DatabaseHandler):
                 tables = cur.fetchall()
                 return [
                     types.Resource(
-                        uri=f"postgres://{self.database}/{table[0]}/schema",
+                        uri=f"postgres://{self.connection}/{table[0]}/schema",
                         name=f"{table[0]} schema",
                         description=table[1] if table[1] else None,
                         mimeType="application/json"
                     ) for table in tables
                 ]
         except psycopg2.Error as e:
-            error_msg = f"Failed to get table list: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            error_msg = f"Failed to get constraint information: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -109,7 +109,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to read table schema: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -144,7 +144,7 @@ class PostgresHandler(DatabaseHandler):
                     cur.execute("ROLLBACK")
         except psycopg2.Error as e:
             error_msg = f"[{self.db_type}] Query execution failed: [Code: {e.pgcode}] {e.pgerror or str(e)}"
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -217,9 +217,9 @@ class PostgresHandler(DatabaseHandler):
                 return "\n".join(description)
                 
         except psycopg2.Error as e:
-            error_msg = f"Failed to get table description: [Code: {e.pgcode}] {e.pgerror or str(e)}"
+            error_msg = f"Failed to get index information: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -316,7 +316,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to get table DDL: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -385,7 +385,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to get index information: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -463,7 +463,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to get table statistics: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -530,7 +530,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to get constraint information: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()
@@ -576,7 +576,7 @@ class PostgresHandler(DatabaseHandler):
         except psycopg2.Error as e:
             error_msg = f"Failed to explain query: [Code: {e.pgcode}] {e.pgerror or str(e)}"
             self.stats.record_error(e.__class__.__name__)
-            raise DatabaseError(error_msg)
+            raise ConnectionHandlerError(error_msg)
         finally:
             if conn:
                 conn.close()

@@ -4,13 +4,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Any, Optional, Literal
 from urllib.parse import urlparse, parse_qs
-from ..config import DatabaseConfig
+from ..config import ConnectionConfig
 
 def parse_jdbc_url(jdbc_url: str) -> Dict[str, str]:
     """Parse JDBC URL into connection parameters
 
     Args:
-        jdbc_url: JDBC URL (e.g. jdbc:sqlite:file:/path/to/database.db or jdbc:sqlite:/path/to/database.db)
+        jdbc_url: JDBC URL (e.g. jdbc:sqlite:file:/path/to/sqlite.db or jdbc:sqlite:/path/to/sqlite.db)
 
     Returns:
         Dictionary of connection parameters
@@ -40,7 +40,7 @@ def parse_jdbc_url(jdbc_url: str) -> Dict[str, str]:
             params[key] = values[0]
 
     if not path:
-        raise ValueError("Database path must be specified in URL")
+        raise ValueError("SQLite file path must be specified in URL")
 
     return {
         'path': path,
@@ -48,22 +48,22 @@ def parse_jdbc_url(jdbc_url: str) -> Dict[str, str]:
     }
 
 @dataclass
-class SqliteConfig(DatabaseConfig):
+class SQLiteConfig(ConnectionConfig):
     path: str
     password: Optional[str] = None
     uri: bool = True  # Enable URI mode to support parameters like password
     type: Literal['sqlite'] = 'sqlite'
 
     @classmethod
-    def from_jdbc_url(cls, jdbc_url: str, password: Optional[str] = None) -> 'SqliteConfig':
+    def from_jdbc_url(cls, jdbc_url: str, password: Optional[str] = None) -> 'SQLiteConfig':
         """Create configuration from JDBC URL
 
         Args:
-            jdbc_url: JDBC URL (e.g. jdbc:sqlite:file:/path/to/database.db)
+            jdbc_url: JDBC URL (e.g. jdbc:sqlite:file:/path/to/sqlite.db)
             password: Optional password for database encryption
 
         Returns:
-            SqliteConfig instance
+            SQLiteConfig instance
 
         Raises:
             ValueError: If URL format is invalid
@@ -80,7 +80,7 @@ class SqliteConfig(DatabaseConfig):
 
     @property
     def absolute_path(self) -> str:
-        """Return absolute path to database file"""
+        """Return absolute path to SQLite database file"""
         return str(Path(self.path).expanduser().resolve())
 
     def get_connection_params(self) -> Dict[str, Any]:
@@ -109,23 +109,23 @@ class SqliteConfig(DatabaseConfig):
         return info
 
     @classmethod
-    def from_yaml(cls, yaml_path: str, db_name: str, **kwargs) -> 'SqliteConfig':
+    def from_yaml(cls, yaml_path: str, db_name: str, **kwargs) -> 'SQLiteConfig':
         """Create SQLite configuration from YAML
 
         Args:
             yaml_path: Path to YAML configuration file
-            db_name: Database configuration name
+            db_name: Connection configuration name
         """
         configs = cls.load_yaml_config(yaml_path)
 
         if db_name not in configs:
             available_dbs = list(configs.keys())
-            raise ValueError(f"Database configuration not found: {db_name}. Available configurations: {available_dbs}")
+            raise ValueError(f"Connection configuration not found: {db_name}. Available configurations: {available_dbs}")
 
         db_config = configs[db_name]
 
         if 'type' not in db_config:
-            raise ValueError("Database configuration must include 'type' field")
+            raise ValueError("Connection configuration must include 'type' field")
         if db_config['type'] != 'sqlite':
             raise ValueError(f"Configuration is not SQLite type: {db_config['type']}")
 

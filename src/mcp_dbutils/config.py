@@ -7,14 +7,14 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, Literal
 from pathlib import Path
 
-# Supported database types
-DBType = Literal['sqlite', 'postgres']
+# Supported connection types
+ConnectionType = Literal['sqlite', 'postgres']
 
-class DatabaseConfig(ABC):
-    """Base class for database configuration"""
+class ConnectionConfig(ABC):
+    """Base class for connection configuration"""
 
     debug: bool = False
-    type: DBType  # Database type
+    type: ConnectionType  # Connection type
 
     @abstractmethod
     def get_connection_params(self) -> Dict[str, Any]:
@@ -39,19 +39,19 @@ class DatabaseConfig(ABC):
         with open(yaml_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
 
-        if not config or 'databases' not in config:
-            raise ValueError("Configuration file must contain 'databases' section")
+        if not config or 'connections' not in config:
+            raise ValueError("Configuration file must contain 'connections' section")
 
         # Validate type field in each database configuration
-        databases = config['databases']
-        for db_name, db_config in databases.items():
+        connections = config['connections']
+        for conn_name, db_config in connections.items():
             if 'type' not in db_config:
-                raise ValueError(f"Database configuration {db_name} missing required 'type' field")
+                raise ValueError(f"Database configuration {conn_name} missing required 'type' field")
             db_type = db_config['type']
             if db_type not in ('sqlite', 'postgres'):
-                raise ValueError(f"Invalid type value in database configuration {db_name}: {db_type}")
+                raise ValueError(f"Invalid type value in database configuration {conn_name}: {db_type}")
 
-        return databases
+        return connections
 
     @classmethod
     def get_debug_mode(cls) -> bool:

@@ -6,7 +6,7 @@ import anyio
 import mcp.types as types
 from mcp import ClientSession
 from mcp.shared.exceptions import McpError
-from mcp_dbutils.base import DatabaseServer
+from mcp_dbutils.base import ConnectionServer
 from mcp_dbutils.log import create_logger
 
 # 创建测试用的 logger
@@ -14,11 +14,11 @@ logger = create_logger("test-tools", True)  # debug=True 以显示所有日志
 
 @pytest.mark.asyncio
 async def test_list_tables_tool(postgres_db, sqlite_db, mcp_config):
-    """Test the list_tables tool with both PostgreSQL and SQLite databases"""
+    """Test the list_tables tool with both PostgreSQL and SQLite connections"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
         yaml.dump(mcp_config, tmp)
         tmp.flush()
-        server = DatabaseServer(config_path=tmp.name)
+        server = ConnectionServer(config_path=tmp.name)
 
         # Create bidirectional streams
         client_to_server_send, client_to_server_recv = anyio.create_memory_object_stream[types.JSONRPCMessage | Exception](10)
@@ -47,7 +47,7 @@ async def test_list_tables_tool(postgres_db, sqlite_db, mcp_config):
                 assert "dbutils-run-query" in tool_names
 
                 # Test list_tables tool with PostgreSQL
-                result = await client.call_tool("dbutils-list-tables", {"database": "test_pg"})
+                result = await client.call_tool("dbutils-list-tables", {"connection": "test_pg"})
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
                 # 检查数据库类型前缀
@@ -55,7 +55,7 @@ async def test_list_tables_tool(postgres_db, sqlite_db, mcp_config):
                 assert "users" in result.content[0].text
 
                 # Test list_tables tool with SQLite
-                result = await client.call_tool("dbutils-list-tables", {"database": "test_sqlite"})
+                result = await client.call_tool("dbutils-list-tables", {"connection": "test_sqlite"})
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
                 # 检查数据库类型前缀
@@ -78,11 +78,11 @@ async def test_list_tables_tool(postgres_db, sqlite_db, mcp_config):
 
 @pytest.mark.asyncio
 async def test_describe_table_tool(postgres_db, sqlite_db, mcp_config):
-    """Test the dbutils-describe-table tool with both PostgreSQL and SQLite databases"""
+    """Test the dbutils-describe-table tool with both PostgreSQL and SQLite connections"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
         yaml.dump(mcp_config, tmp)
         tmp.flush()
-        server = DatabaseServer(config_path=tmp.name)
+        server = ConnectionServer(config_path=tmp.name)
 
         # Create bidirectional streams
         client_to_server_send, client_to_server_recv = anyio.create_memory_object_stream[types.JSONRPCMessage | Exception](10)
@@ -110,7 +110,7 @@ async def test_describe_table_tool(postgres_db, sqlite_db, mcp_config):
                 assert "dbutils-describe-table" in tool_names
 
                 # Test PostgreSQL describe-table
-                pg_args = {"database": "test_pg", "table": "users"}
+                pg_args = {"connection": "test_pg", "table": "users"}
                 result = await client.call_tool("dbutils-describe-table", pg_args)
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
@@ -119,7 +119,7 @@ async def test_describe_table_tool(postgres_db, sqlite_db, mcp_config):
                 assert "Columns:" in result.content[0].text
 
                 # Test SQLite describe-table
-                sqlite_args = {"database": "test_sqlite", "table": "products"}
+                sqlite_args = {"connection": "test_sqlite", "table": "products"}
                 result = await client.call_tool("dbutils-describe-table", sqlite_args)
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
@@ -143,11 +143,11 @@ async def test_describe_table_tool(postgres_db, sqlite_db, mcp_config):
 
 @pytest.mark.asyncio
 async def test_get_ddl_tool(postgres_db, sqlite_db, mcp_config):
-    """Test the dbutils-get-ddl tool with both PostgreSQL and SQLite databases"""
+    """Test the dbutils-get-ddl tool with both PostgreSQL and SQLite connections"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
         yaml.dump(mcp_config, tmp)
         tmp.flush()
-        server = DatabaseServer(config_path=tmp.name)
+        server = ConnectionServer(config_path=tmp.name)
 
         # Create bidirectional streams
         client_to_server_send, client_to_server_recv = anyio.create_memory_object_stream[types.JSONRPCMessage | Exception](10)
@@ -175,7 +175,7 @@ async def test_get_ddl_tool(postgres_db, sqlite_db, mcp_config):
                 assert "dbutils-get-ddl" in tool_names
 
                 # Test PostgreSQL get-ddl
-                pg_args = {"database": "test_pg", "table": "users"}
+                pg_args = {"connection": "test_pg", "table": "users"}
                 result = await client.call_tool("dbutils-get-ddl", pg_args)
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
@@ -183,7 +183,7 @@ async def test_get_ddl_tool(postgres_db, sqlite_db, mcp_config):
                 assert "CREATE TABLE users" in result.content[0].text
 
                 # Test SQLite get-ddl
-                sqlite_args = {"database": "test_sqlite", "table": "products"}
+                sqlite_args = {"connection": "test_sqlite", "table": "products"}
                 result = await client.call_tool("dbutils-get-ddl", sqlite_args)
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
@@ -206,11 +206,11 @@ async def test_get_ddl_tool(postgres_db, sqlite_db, mcp_config):
 
 @pytest.mark.asyncio
 async def test_list_indexes_tool(postgres_db, sqlite_db, mcp_config):
-    """Test the dbutils-list-indexes tool with both PostgreSQL and SQLite databases"""
+    """Test the dbutils-list-indexes tool with both PostgreSQL and SQLite connections"""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml') as tmp:
         yaml.dump(mcp_config, tmp)
         tmp.flush()
-        server = DatabaseServer(config_path=tmp.name)
+        server = ConnectionServer(config_path=tmp.name)
 
         # Create bidirectional streams
         client_to_server_send, client_to_server_recv = anyio.create_memory_object_stream[types.JSONRPCMessage | Exception](10)
@@ -238,14 +238,14 @@ async def test_list_indexes_tool(postgres_db, sqlite_db, mcp_config):
                 assert "dbutils-list-indexes" in tool_names
 
                 # Test PostgreSQL list-indexes
-                pg_args = {"database": "test_pg", "table": "users"}
+                pg_args = {"connection": "test_pg", "table": "users"}
                 result = await client.call_tool("dbutils-list-indexes", pg_args)
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
                 assert "[postgres]" in result.content[0].text
 
                 # Test SQLite list-indexes
-                sqlite_args = {"database": "test_sqlite", "table": "products"}
+                sqlite_args = {"connection": "test_sqlite", "table": "products"}
                 result = await client.call_tool("dbutils-list-indexes", sqlite_args)
                 assert len(result.content) == 1
                 assert result.content[0].type == "text"
