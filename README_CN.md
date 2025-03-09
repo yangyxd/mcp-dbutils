@@ -273,6 +273,27 @@ except Exception as e:
   * sql: 要执行的SQL查询（仅支持SELECT）
 - 返回：格式化的查询结果文本
 
+#### dbutils-get-stats
+获取表的统计信息。
+- 参数：
+  * database: 数据库配置名称
+  * table: 表名
+- 返回：包括行数、大小、列统计等信息
+
+#### dbutils-list-constraints
+列出表的约束信息（主键、外键等）。
+- 参数：
+  * database: 数据库配置名称
+  * table: 表名
+- 返回：详细的约束信息
+
+#### dbutils-explain-query
+获取查询的执行计划和成本估算。
+- 参数：
+  * database: 数据库配置名称
+  * sql: 要分析的SQL查询
+- 返回：格式化的执行计划
+
 ### DatabaseHandler
 抽象基类，定义接口:
 - get_tables(): 获取表资源列表

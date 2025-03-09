@@ -289,6 +289,27 @@ Executes a SQL query on the specified database.
   * sql: SQL query to execute (SELECT only)
 - Returns: Query results in a formatted text
 
+#### dbutils-get-stats
+Get table statistics information.
+- Parameters:
+  * database: Database configuration name
+  * table: Table name
+- Returns: Statistics including row count, size, column stats
+
+#### dbutils-list-constraints
+List table constraints (primary key, foreign keys, etc).
+- Parameters:
+  * database: Database configuration name
+  * table: Table name
+- Returns: Detailed constraint information
+
+#### dbutils-explain-query
+Get query execution plan with cost estimates.
+- Parameters:
+  * database: Database configuration name
+  * sql: SQL query to explain
+- Returns: Formatted execution plan
+
 ### DatabaseHandler
 Abstract base class defining interfaces:
 - get_tables(): Get table resource list
