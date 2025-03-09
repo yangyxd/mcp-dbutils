@@ -1,12 +1,91 @@
 # CHANGELOG
 
 
+## v0.9.0 (2025-03-09)
+
+### Documentation
+
+- Update README files to include new tools
+  ([`eb796d5`](https://github.com/donghao1393/mcp-dbutils/commit/eb796d54ca517c173e26b8a535bfeb00545fbab0))
+
+Added documentation for new tools: - dbutils-get-stats - dbutils-list-constraints -
+  dbutils-explain-query
+
+Both English and Chinese READMEs updated
+
+- Update README files with new monitoring tools
+  ([#18](https://github.com/donghao1393/mcp-dbutils/pull/18),
+  [`4b919fe`](https://github.com/donghao1393/mcp-dbutils/commit/4b919fe348e2f6ed35ea1f16b64a2706a5d875f4))
+
+- Add dbutils-get-performance tool documentation - Add dbutils-analyze-query tool documentation -
+  Update both English and Chinese READMEs
+
+- Update tool names with dbutils prefix
+  ([`4731021`](https://github.com/donghao1393/mcp-dbutils/commit/4731021ab981ecca305414f34f72c1f8f0577b8e))
+
+Renamed basic tools in README files: - list_tables -> dbutils-list-tables - query -> dbutils-query
+
+Both English and Chinese READMEs updated
+
+### Features
+
+- Add advanced database tools ([#15](https://github.com/donghao1393/mcp-dbutils/pull/15),
+  [`2c85dc8`](https://github.com/donghao1393/mcp-dbutils/commit/2c85dc8c026bca93571ab8ed5b837518553087d5))
+
+* Added three new tools:
+
+1. dbutils-get-stats - Table statistics information - Column level statistics - Adapted for
+  PostgreSQL and SQLite
+
+2. dbutils-list-constraints - Primary key, foreign key, unique constraints - Constraint definitions
+  and properties - Constraint comments support
+
+3. dbutils-explain-query - EXPLAIN and EXPLAIN ANALYZE support - Detailed cost and timing estimates
+  - Database-specific optimizations
+
+Implementation: - Added abstract methods to DatabaseHandler - Implemented in PostgreSQL and SQLite -
+  Added dedicated integration tests - Fixed SQL syntax and parameter issues
+
+Refs #14
+
+* fix: check non-SELECT statements in SQLite handler
+
+- Add more database tools ([#13](https://github.com/donghao1393/mcp-dbutils/pull/13),
+  [`8b8bd1e`](https://github.com/donghao1393/mcp-dbutils/commit/8b8bd1ea04d63e7828c81dc25a9c0cb70df73867))
+
+* 添加更多数据库工具
+
+添加三个新的数据库工具： - dbutils-describe-table：获取表的详细信息 - dbutils-get-ddl：获取表的DDL语句 -
+  dbutils-list-indexes：获取表的索引信息
+
+实现内容： - DatabaseHandler新增三个抽象方法 - PostgreSQL和SQLite分别实现这些方法 - 添加新工具的集成测试 - 所有测试通过
+
+Fixes #12
+
+* test: 拆分表信息工具测试
+
+将test_table_info_tools拆分为三个独立的测试函数： - test_describe_table_tool - test_get_ddl_tool -
+  test_list_indexes_tool
+
+这样可以更清晰地展示每个工具的测试状态，便于定位问题。
+
+- Enhance monitoring system with LLM dialog support
+  ([#17](https://github.com/donghao1393/mcp-dbutils/pull/17),
+  [`50d8df1`](https://github.com/donghao1393/mcp-dbutils/commit/50d8df1fabbf6513718582e6efe0d3832de9ce5d))
+
+- Add query duration tracking - Add query type statistics - Add slow query detection - Add memory
+  usage tracking - Add performance statistics formatting - Add new MCP tools:
+  dbutils-get-performance and dbutils-analyze-query - Add tests for new features
+
+Closes #16
+
+
 ## v0.8.0 (2025-03-09)
 
 ### Features
 
 - Unify tool names with dbutils prefix ([#11](https://github.com/donghao1393/mcp-dbutils/pull/11),
-  [`30ebbc2`](https://github.com/donghao1393/mcp-dbutils/commit/30ebbc251be55f7d18fc9873021151b82c3f0fde))
+  [`aa57995`](https://github.com/donghao1393/mcp-dbutils/commit/aa57995dc6cf3ffd33909162d831dffbbbf19bfc))
 
 给工具名称添加dbutils前缀，使所有工具名称规范统一： - query -> dbutils-run-query - list_tables -> dbutils-list-tables
 
