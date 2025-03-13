@@ -47,5 +47,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
+      - name: Check if dist directory exists
+        id: check_dist
+        run: |
+          if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
+            echo "dist_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "dist_exists=false" >> $GITHUB_OUTPUT
+            echo "No distribution packages found in dist/ directory. Skipping PyPI publish."
+          fi
+
       - name: Publish to PyPI
+        if: steps.check_dist.outputs.dist_exists == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
