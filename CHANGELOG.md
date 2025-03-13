@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.3...v0.11.0) (2025-03-13)
+
+
+### Features
+
+* Add MySQL support ([#26](https://github.com/donghao1393/mcp-dbutils/issues/26)) ([d25c5af](https://github.com/donghao1393/mcp-dbutils/commit/d25c5af9f44d81ca5160841817c40514dba750d4)), closes [#25](https://github.com/donghao1393/mcp-dbutils/issues/25) [#25](https://github.com/donghao1393/mcp-dbutils/issues/25) [#25](https://github.com/donghao1393/mcp-dbutils/issues/25) [#25](https://github.com/donghao1393/mcp-dbutils/issues/25) [#25](https://github.com/donghao1393/mcp-dbutils/issues/25) [#25](https://github.com/donghao1393/mcp-dbutils/issues/25) [#25](https://github.com/donghao1393/mcp-dbutils/issues/25)
+
 ## [0.10.3](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.2...v0.10.3) (2025-03-13)
 
 
