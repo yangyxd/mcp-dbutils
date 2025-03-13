@@ -1,3 +1,10 @@
+## [0.10.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.0...v0.10.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* update verifyConditionsCmd in semantic-release config ([4271476](https://github.com/donghao1393/mcp-dbutils/commit/42714761d5d8bbbd39b9bae2aa550e1d06aa351c))
+
 # CHANGELOG
 
 
