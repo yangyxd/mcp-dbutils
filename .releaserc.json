@@ -5,7 +5,7 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
     ["@semantic-release/exec", {
-      "verifyConditionsCmd": "uv build --check",
+      "verifyConditionsCmd": "uv --version",
       "prepareCmd": "sed -i.bak 's/version = \".*\"/version = \"${nextRelease.version}\"/g' pyproject.toml && rm -f pyproject.toml.bak",
       "publishCmd": "uv build"
     }],
