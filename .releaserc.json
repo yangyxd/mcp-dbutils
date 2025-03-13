@@ -1,0 +1,26 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    ["@semantic-release/exec", {
+      "verifyConditionsCmd": "uv build --check",
+      "prepareCmd": "sed -i.bak 's/version = \".*\"/version = \"${nextRelease.version}\"/g' pyproject.toml && rm -f pyproject.toml.bak",
+      "publishCmd": "uv build"
+    }],
+    ["@semantic-release/git", {
+      "assets": [
+        "pyproject.toml",
+        "CHANGELOG.md"
+      ],
+      "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+    }],
+    ["@semantic-release/github", {
+      "assets": [
+        {"path": "dist/*.whl", "label": "Python Wheel ${nextRelease.version}"},
+        {"path": "dist/*.tar.gz", "label": "Source Distribution ${nextRelease.version}"}
+      ]
+    }]
+  ]
+}
