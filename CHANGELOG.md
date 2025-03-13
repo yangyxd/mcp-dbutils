@@ -1,3 +1,10 @@
+## [0.10.2](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.1...v0.10.2) (2025-03-13)
+
+
+### Bug Fixes
+
+* remove conditional check for PyPI publishing ([e714ef8](https://github.com/donghao1393/mcp-dbutils/commit/e714ef89db8dc35eca1a5c2f09f240dee94192eb))
+
 ## [0.10.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.0...v0.10.1) (2025-03-13)
 
 
