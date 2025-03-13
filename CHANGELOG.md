@@ -1,3 +1,10 @@
+## [0.10.3](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.2...v0.10.3) (2025-03-13)
+
+
+### Bug Fixes
+
+* add dist directory check before PyPI publish ([88973ad](https://github.com/donghao1393/mcp-dbutils/commit/88973ad971d0975120e92fea46c9464e46f5b7eb))
+
 ## [0.10.2](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.1...v0.10.2) (2025-03-13)
 
 
