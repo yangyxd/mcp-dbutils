@@ -22,15 +22,15 @@ class ResourceStats:
     # Error stats
     error_count: int = 0
     last_error_time: Optional[datetime] = None
-    error_types: dict[str, int] = None
+    error_types: Optional[dict[str, int]] = None
 
     # Resource stats
     estimated_memory: int = 0
     
     # Performance monitoring
-    query_durations: List[float] = None  # 查询执行时间列表 (秒)
-    query_types: dict[str, int] = None   # 查询类型统计 (SELECT, EXPLAIN等)
-    slow_queries: List[Tuple[str, float]] = None  # 慢查询记录 (SQL, 时间)
+    query_durations: Optional[List[float]] = None  # 查询执行时间列表 (秒)
+    query_types: Optional[dict[str, int]] = None   # 查询类型统计 (SELECT, EXPLAIN等)
+    slow_queries: Optional[List[Tuple[str, float]]] = None  # 慢查询记录 (SQL, 时间)
     peak_memory: int = 0  # 峰值内存使用
 
     def __post_init__(self):
@@ -127,8 +127,8 @@ class ResourceStats:
             Formatted string with performance statistics
         """
         stats = []
-        stats.append(f"Database Performance Statistics")
-        stats.append(f"-----------------------------")
+        stats.append("Database Performance Statistics")
+        stats.append("-----------------------------")
         stats.append(f"Query Count: {self.query_count}")
         
         # Query time statistics
@@ -138,14 +138,14 @@ class ResourceStats:
         
         # Query type distribution
         if self.query_types:
-            stats.append(f"Query Types:")
+            stats.append("Query Types:")
             for qtype, count in self.query_types.items():
                 percentage = (count / self.query_count) * 100 if self.query_count else 0
                 stats.append(f"  - {qtype}: {count} ({percentage:.1f}%)")
         
         # Slow queries
         if self.slow_queries:
-            stats.append(f"Slow Queries:")
+            stats.append("Slow Queries:")
             for sql, duration in self.slow_queries:
                 stats.append(f"  - {duration*1000:.2f}ms: {sql}...")
         
@@ -153,7 +153,7 @@ class ResourceStats:
         if self.error_count > 0:
             error_rate = (self.error_count / self.query_count) * 100 if self.query_count else 0
             stats.append(f"Error Rate: {error_rate:.2f}% ({self.error_count} errors)")
-            stats.append(f"Error Types:")
+            stats.append("Error Types:")
             for etype, count in self.error_types.items():
                 stats.append(f"  - {etype}: {count}")
         
