@@ -44,7 +44,9 @@ test = [
     "docker>=7.0.0",
     "aiosqlite>=0.19.0",
     "testcontainers>=3.7.0",
-    "pytest-cov>=4.1.0"
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "pre-commit>=3.6.0"
 ]
 
 [tool.pytest.ini_options]
@@ -56,3 +58,62 @@ markers = [
 filterwarnings = [
     "ignore::pytest.PytestCollectionWarning"
 ]
+
+# Ruff配置
+[tool.ruff]
+# 目标Python版本
+target-version = "py310"
+# 行长度限制
+line-length = 88
+# 排除的文件和目录
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+# Lint配置
+[tool.ruff.lint]
+# 选择的规则集
+select = [
+    "E",   # pycodestyle错误
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "T20", # flake8-print
+]
+# 忽略的规则 - 暂时忽略，后续PR中逐步修复
+ignore = [
+    "E501",  # 行太长
+    "B904",  # 在except子句中使用raise ... from err
+    "UP035", # 使用新的typing语法
+    "UP006", # 使用新的类型注解语法
+    "UP007", # 使用X | Y替代Union
+    "F401",  # 未使用的导入
+    "F541",  # f-string没有占位符
+    "UP015", # 不必要的mode参数
+    "UP032", # 使用f-string替代format
+    "B905",  # zip()没有strict参数
+    "SIM105", # 使用contextlib.suppress
+    "UP038",  # 在isinstance调用中使用X | Y
+    "F821",   # 未定义的名称
+    "F841",   # 未使用的局部变量
+    "E402",   # 模块级导入不在文件顶部
+    "T201",   # print语句 - 在日志模块中是必要的
+]
+
+# isort配置
+[tool.ruff.lint.isort]
+known-first-party = ["mcp_dbutils"]
+
+# 格式化配置
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

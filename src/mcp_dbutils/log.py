@@ -1,8 +1,9 @@
 """日志处理模块"""
 
 import sys
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable
+
 
 def create_logger(name: str, is_debug: bool = False) -> Callable:
     """创建stderr日志函数，用于本地调试
