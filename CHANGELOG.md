@@ -1,3 +1,10 @@
+# [0.13.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.12.0...v0.13.0) (2025-03-14)
+
+
+### Features
+
+* configure SonarCloud quality gates ([#31](https://github.com/donghao1393/mcp-dbutils/issues/31)) ([454c4d3](https://github.com/donghao1393/mcp-dbutils/commit/454c4d384e4ddd8d324fe4292b13436c6b22328c)), closes [#30](https://github.com/donghao1393/mcp-dbutils/issues/30)
+
 # [0.12.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.11.0...v0.12.0) (2025-03-14)
 
 
