@@ -1,3 +1,10 @@
+## [0.15.2](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.1...v0.15.2) (2025-03-14)
+
+
+### Bug Fixes
+
+* 修复SonarCloud报告的技术债务问题 ([#41](https://github.com/donghao1393/mcp-dbutils/issues/41)) ([3e97490](https://github.com/donghao1393/mcp-dbutils/commit/3e97490b37082360deabfcfc87228ab221c9d2b0)), closes [#37](https://github.com/donghao1393/mcp-dbutils/issues/37) [#37](https://github.com/donghao1393/mcp-dbutils/issues/37) [#37](https://github.com/donghao1393/mcp-dbutils/issues/37) [#37](https://github.com/donghao1393/mcp-dbutils/issues/37) [#37](https://github.com/donghao1393/mcp-dbutils/issues/37) [#37](https://github.com/donghao1393/mcp-dbutils/issues/37)
+
 ## [0.15.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.0...v0.15.1) (2025-03-14)
 
 
