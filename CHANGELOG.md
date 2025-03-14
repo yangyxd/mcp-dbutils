@@ -1,3 +1,10 @@
+# [0.14.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.13.0...v0.14.0) (2025-03-14)
+
+
+### Features
+
+* implement SonarCloud PR auto-comment system ([#33](https://github.com/donghao1393/mcp-dbutils/issues/33)) ([4e83211](https://github.com/donghao1393/mcp-dbutils/commit/4e83211c4c7a289a6b794cdc5e03caac301d173c)), closes [#32](https://github.com/donghao1393/mcp-dbutils/issues/32)
+
 # [0.13.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.12.0...v0.13.0) (2025-03-14)
 
 
