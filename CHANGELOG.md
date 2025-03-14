@@ -1,3 +1,10 @@
+## [0.15.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.0...v0.15.1) (2025-03-14)
+
+
+### Bug Fixes
+
+* ensure SonarCloud reports are generated even when analysis fails ([#40](https://github.com/donghao1393/mcp-dbutils/issues/40)) ([01d8a43](https://github.com/donghao1393/mcp-dbutils/commit/01d8a431f22079e621cc4160c210f3e8ce68a754)), closes [#39](https://github.com/donghao1393/mcp-dbutils/issues/39)
+
 # [0.15.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.14.0...v0.15.0) (2025-03-14)
 
 
