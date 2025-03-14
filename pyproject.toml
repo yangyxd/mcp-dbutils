@@ -1,6 +1,6 @@
 [project]
 name = "mcp-dbutils"
-version = "0.14.0"
+version = "0.15.0"
 description = "MCP Database Utilities Service"
 readme = "README.md"
 license = "MIT"
@@ -62,7 +62,7 @@ filterwarnings = [
 # Ruff配置
 [tool.ruff]
 # 目标Python版本
-target-version = "py310"
+target-version = "0.15.0"
 # 行长度限制
 line-length = 88
 # 排除的文件和目录

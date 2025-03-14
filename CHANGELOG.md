@@ -1,3 +1,10 @@
+# [0.15.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.14.0...v0.15.0) (2025-03-14)
+
+
+### Features
+
+* integrate Ruff code style automation ([#35](https://github.com/donghao1393/mcp-dbutils/issues/35)) ([6b2bdd7](https://github.com/donghao1393/mcp-dbutils/commit/6b2bdd749cecf2ad9167867c6e41149d1a57746f)), closes [#34](https://github.com/donghao1393/mcp-dbutils/issues/34)
+
 # [0.14.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.13.0...v0.14.0) (2025-03-14)
 
 
