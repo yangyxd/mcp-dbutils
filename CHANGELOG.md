@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.11.0...v0.12.0) (2025-03-14)
+
+
+### Features
+
+* integrate SonarCloud analysis ([#29](https://github.com/donghao1393/mcp-dbutils/issues/29)) ([67649c5](https://github.com/donghao1393/mcp-dbutils/commit/67649c55cc317c2ee20c69777d1629895863dd86)), closes [#28](https://github.com/donghao1393/mcp-dbutils/issues/28)
+
 # [0.11.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.10.3...v0.11.0) (2025-03-13)
 
 
