@@ -1,3 +1,10 @@
+## [0.16.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.16.0...v0.16.1) (2025-03-15)
+
+
+### Bug Fixes
+
+* some SonarCloud issues ([#51](https://github.com/donghao1393/mcp-dbutils/issues/51)) ([4df99de](https://github.com/donghao1393/mcp-dbutils/commit/4df99de5d7d12c018aa5e28e9f785e5f0828543d))
+
 # [0.16.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.5...v0.16.0) (2025-03-15)
 
 
