@@ -1,3 +1,10 @@
+## [0.15.3](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.2...v0.15.3) (2025-03-15)
+
+
+### Bug Fixes
+
+* 修复SonarCloud问题提取逻辑，仅获取PR相关问题 ([#43](https://github.com/donghao1393/mcp-dbutils/issues/43)) ([8ca874c](https://github.com/donghao1393/mcp-dbutils/commit/8ca874c61a0f1d02ed98c79ea18ab7f66eb41659)), closes [#42](https://github.com/donghao1393/mcp-dbutils/issues/42)
+
 ## [0.15.2](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.1...v0.15.2) (2025-03-14)
 
 
