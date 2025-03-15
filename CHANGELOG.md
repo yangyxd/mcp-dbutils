@@ -1,3 +1,10 @@
+# [0.16.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.5...v0.16.0) (2025-03-15)
+
+
+### Features
+
+* 增强sonar-ai-fix脚本，添加PR支持和文件名自定义 ([ec8e574](https://github.com/donghao1393/mcp-dbutils/commit/ec8e574626a6907933c7a1c3853f88020bcf59b7))
+
 ## [0.15.5](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.4...v0.15.5) (2025-03-15)
 
 
