@@ -1,547 +1,279 @@
 # MCP Database Utilities
 
-![GitHub Repo stars](https://img.shields.io/github/stars/donghao1393/mcp-dbutils)
-![PyPI version](https://img.shields.io/pypi/v/mcp-dbutils)
+<!-- 项目状态徽章 -->
+[![Build Status](https://img.shields.io/github/workflow/status/donghao1393/mcp-dbutils/Quality%20Assurance?label=tests)](https://github.com/donghao1393/mcp-dbutils/actions)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/donghao1393/bdd0a63ec2a816539ff8c136ceb41e48/raw/coverage.json)](https://github.com/donghao1393/mcp-dbutils/actions)
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![License](https://img.shields.io/github/license/donghao1393/mcp-dbutils)
-[![smithery badge](https://smithery.ai/badge/@donghao1393/mcp-dbutils)](https://smithery.ai/server/@donghao1393/mcp-dbutils)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=donghao1393_mcp-dbutils&metric=alert_status)](https://sonarcloud.io/dashboard?id=donghao1393_mcp-dbutils)
 
-[中文文档](README_CN.md)
+<!-- 版本和安装徽章 -->
+[![PyPI version](https://img.shields.io/pypi/v/mcp-dbutils)](https://pypi.org/project/mcp-dbutils/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/mcp-dbutils)](https://pypi.org/project/mcp-dbutils/)
+[![Smithery](https://smithery.ai/badge/@donghao1393/mcp-dbutils)](https://smithery.ai/server/@donghao1393/mcp-dbutils)
 
-## Overview
-MCP Database Utilities is a unified database access service that supports multiple database types (PostgreSQL, SQLite, and MySQL). Through its abstraction layer design, it provides a simple and unified database operation interface for MCP servers.
+<!-- 技术规格徽章 -->
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/donghao1393/mcp-dbutils)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/donghao1393/mcp-dbutils?style=social)](https://github.com/donghao1393/mcp-dbutils/stargazers)
 
-## Features
-- Unified database access interface
-- Support for multiple database configurations
-- Secure read-only query execution
-- Table structure and schema information retrieval
-- Database tables listing via MCP tools
-- Intelligent connection management and resource cleanup
-- Debug mode support
-- SSL/TLS connection support for PostgreSQL and MySQL
+[中文文档](README_CN.md) | [Technical Guide](docs/technical-guide.md)
 
-## Installation and Configuration
+## What is MCP Database Utilities?
 
-### Installation Methods
-#### Installing via Smithery
+MCP Database Utilities is an all-in-one MCP service that enables your AI to do data analysis by accessing versatile types of database (SQLite, MySQL, PostgreSQL, and more) within a unified connection configuration in a safe way.
 
-To install Database Utilities for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@donghao1393/mcp-dbutils):
+Think of it as a secure bridge between AI systems and your databases, allowing AI to read and analyze your data without direct database access or risking data modifications.
+
+## Security and Privacy: Our Top Priority
+
+MCP Database Utilities is built with a **security-first architecture**, making it ideal for businesses, startups, and individuals who value data protection. Our comprehensive security measures include:
+
+### Data Protection
+
+- **Strictly Read-Only**: All operations are limited to SELECT queries only - data cannot be modified
+- **No Direct Database Access**: AI interacts with your database through our secure service, never directly
+- **Isolated Connections**: Each database connection is managed separately and strictly isolated
+- **On-Demand Connectivity**: Connects only when needed and disconnects immediately after task completion
+- **Automatic Timeouts**: Long-running operations are automatically terminated to prevent resource abuse
+
+### Privacy Safeguards
+
+- **Local Processing**: All data processing occurs on your local machine - no data sent to external servers
+- **Minimal Data Exposure**: Only requested data is returned, limiting exposure scope
+- **Credential Protection**: Connection credentials are never exposed to the AI model
+- **Sensitive Data Masking**: Passwords and connection details are automatically hidden in logs
+
+### Enterprise-Ready Security
+
+- **SSL/TLS Support**: Encrypted connections to remote databases
+- **Configuration Separation**: YAML configuration files eliminate interpretation risks
+- **User-Controlled Access**: You decide which databases are accessible
+- **Secure Default Settings**: Secure by default with no additional configuration needed
+
+For technical details about our security architecture, see the [Technical Guide](docs/technical-guide.md#通信模式与安全架构).
+
+## Why Use MCP Database Utilities?
+
+- **Universal AI Support**: Works with any AI system that supports the MCP protocol
+- **Multiple Database Support**: Connect to SQLite, MySQL, PostgreSQL with the same interface
+- **Simple Configuration**: Single YAML file for all your database connections
+- **Advanced Capabilities**: Table exploration, schema analysis, and query execution
+
+## System Requirements
+
+- Python 3.10 or higher
+- One of the following:
+  - **For uvx installation**: uv package manager
+  - **For Docker installation**: Docker Desktop
+  - **For Smithery installation**: Node.js 14+
+- Supported databases:
+  - SQLite 3.x
+  - PostgreSQL 12+
+  - MySQL 8+
+- Supported AI clients:
+  - Claude Desktop
+  - Cursor
+  - Any MCP-compatible client
+
+## Getting Started
+
+### 1. Installation Guide
+
+Choose **ONE** of the following methods to install:
+
+#### Option A: Using uvx (Recommended)
+
+This method uses `uvx`, which is part of the Python package manager tool called "uv". Here's how to set it up:
+
+1. **Install uv and uvx first:**
+
+   **On macOS or Linux:**
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+   **On Windows:**
+   ```powershell
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
+
+   After installation, verify that uv is installed correctly:
+   ```bash
+   uv --version
+   # Should display something like: uv 0.5.5 (Homebrew 2024-11-27)
+   ```
+
+2. **Create a configuration file** named `config.yaml` with your database connection details:
+
+   ```yaml
+   connections:
+     my-sqlite:
+       type: sqlite
+       path: /path/to/my-database.db
+       
+     my-postgres:
+       type: postgres
+       host: localhost
+       port: 5432
+       dbname: my_database
+       user: my_user
+       password: my_password
+   ```
+
+   > For advanced configuration options (SSL connections, connection pooling, etc.), 
+   > please refer to the [Configuration System Details](docs/technical-guide.md#configuration-system-details) section in our technical guide.
+
+3. **Add this configuration to your AI client:**
+
+**For JSON-based MCP clients:**
+- Locate and edit your client's MCP configuration file:
+  - **Claude Desktop (Mac)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+  - **Cline (Mac)**: `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+  - **Other clients**: Refer to your client's documentation for the MCP configuration file location
+- Add the following configuration to the JSON file:
+
+```json
+"dbutils": {
+  "command": "uvx",
+  "args": [
+    "mcp-dbutils",
+    "--config",
+    "/full/path/to/your/config.yaml"
+  ]
+}
+```
+
+**For Cursor:**
+- Open Cursor
+- Go to Settings → MCP
+- Click "Add MCP Server" and fill in:
+  - Name: `Database Utility MCP`
+  - Type: `Command` (default)
+  - Command: `uvx mcp-dbutils --config /full/path/to/your/config.yaml`
+
+> **Important Notes for uvx Setup:**
+> - Replace `/full/path/to/your/config.yaml` with the actual full path to your config file
+> - If you get an error about uvx not being found, make sure step 1 was completed successfully
+> - You can verify uvx is installed by typing `uvx --version` in your terminal
+
+#### Option B: Manual Installation with Docker
+
+1. Install Docker from [docker.com](https://www.docker.com/products/docker-desktop/) if you don't have it
+
+2. Create a configuration file (see next section for details)
+
+3. Add this configuration to your AI client:
+
+**For JSON-based MCP clients:**
+- Locate and edit your client's MCP configuration file:
+  - **Claude Desktop (Mac)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+  - **Cline (Mac)**: `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+  - **Other clients**: Refer to your client's documentation for the MCP configuration file location
+- Add the following configuration to the JSON file:
+
+```json
+"dbutils": {
+  "command": "docker",
+  "args": [
+    "run",
+    "-i",
+    "--rm",
+    "-v",
+    "/full/path/to/your/config.yaml:/app/config.yaml",
+    "-v",
+    "/full/path/to/your/sqlite.db:/app/sqlite.db",  // Only needed for SQLite
+    "mcp/dbutils",
+    "--config",
+    "/app/config.yaml"
+  ]
+}
+```
+
+**For Cursor:**
+- Open Cursor
+- Go to Settings → MCP
+- Click "Add MCP Server" and fill in:
+  - Name: `Database Utility MCP`
+  - Type: `Command` (default)
+  - Command: `docker run -i --rm -v /full/path/to/your/config.yaml:/app/config.yaml -v /full/path/to/your/sqlite.db:/app/sqlite.db mcp/dbutils --config /app/config.yaml`
+
+> **Important Notes for Docker:**
+> - Replace `/full/path/to/your/config.yaml` with the actual full path to your config file
+> - For SQLite databases, also replace the sqlite.db path with your actual database path
+> - For other database types, remove the SQLite volume line entirely
+
+#### Option C: Using Smithery (One-Click for Claude)
+
+This method automatically installs AND configures the service for Claude:
 
 ```bash
 npx -y @smithery/cli install @donghao1393/mcp-dbutils --client claude
 ```
 
-#### Using uvx (Recommended)
-No installation required, run directly using `uvx`:
-```bash
-uvx mcp-dbutils --config /path/to/config.yaml
-```
+After installation completes, skip to the "Using the Service" section.
 
-Add to Claude configuration:
-```json
-"mcpServers": {
-  "dbutils": {
-    "command": "uvx",
-    "args": [
-      "mcp-dbutils",
-      "--config",
-      "/path/to/config.yaml"
-    ],
-    "env": {
-      "MCP_DEBUG": "1"  // Optional: Enable debug mode
-    }
-  }
-}
-```
+### 4. Using the Service
 
-#### Using pip
-```bash
-pip install mcp-dbutils
-```
+Once installed and configured properly, your AI can now:
+- List tables in your database
+- View table structures
+- Execute SQL queries safely
+- Analyze data across multiple databases
 
-Add to Claude configuration:
-```json
-"mcpServers": {
-  "dbutils": {
-    "command": "python",
-    "args": [
-      "-m",
-      "mcp_dbutils",
-      "--config",
-      "/path/to/config.yaml"
-    ],
-    "env": {
-      "MCP_DEBUG": "1"  // Optional: Enable debug mode
-    }
-  }
-}
-```
+**To verify everything is working:**
 
-#### Using Docker
-```bash
-docker run -i --rm \
-  -v /path/to/config.yaml:/app/config.yaml \
-  -v /path/to/sqlite.db:/app/sqlite.db \  # Optional: for SQLite database
-  -e MCP_DEBUG=1 \  # Optional: Enable debug mode
-  mcp/dbutils --config /app/config.yaml
-```
+1. Ask your AI something like: "Can you check if you're able to connect to my database?"
+2. If properly configured, the AI should reply that it can connect to the database specified in your config file
+3. Try a simple command like: "List the tables in my database"
 
-Add to Claude configuration:
-```json
-"mcpServers": {
-  "dbutils": {
-    "command": "docker",
-    "args": [
-      "run",
-      "-i",
-      "--rm",
-      "-v",
-      "/path/to/config.yaml:/app/config.yaml",
-      "-v",
-      "/path/to/sqlite.db:/app/sqlite.db",  // Optional: for SQLite database
-      "mcp/dbutils",
-      "--config",
-      "/app/config.yaml"
-    ],
-    "env": {
-      "MCP_DEBUG": "1"  // Optional: Enable debug mode
-    }
-  }
-}
-```
+If you encounter any issues, check:
+- Your configuration file syntax is correct
+- The database connection details are accurate
+- Your AI client has the MCP server properly configured
+- Your database is accessible from your computer
 
-> **Note for Docker database connections:**
-> - For SQLite: Mount your database file using `-v /path/to/sqlite.db:/app/sqlite.db`
-> - For PostgreSQL running on host:
->   - On Mac/Windows: Use `host.docker.internal` as host in config
->   - On Linux: Use `172.17.0.1` (docker0 IP) or run with `--network="host"`
+## Example Interactions
 
-### Requirements
-- Python 3.10+
-- PostgreSQL (optional)
-- SQLite3 (optional)
-- MySQL (optional)
+**You**: "Can you list all the tables in my my-postgres database?"
 
-### Configuration File
-The project requires a YAML configuration file, specified via the `--config` parameter. Configuration examples:
+**AI**: "I'll check that for you. Here are the tables in your my-postgres database:
+- customers
+- products
+- orders
+- inventory
+- employees"
 
-```yaml
-connections:
-  # SQLite configuration examples
-  dev-db:
-    type: sqlite
-    path: /path/to/dev.db
-    # Password is optional
-    password: 
+**You**: "What does the customers table look like?"
 
-  # PostgreSQL standard configuration
-  test-db:
-    type: postgres
-    host: postgres.example.com
-    port: 5432
-    dbname: test_db
-    user: test_user
-    password: test_pass
+**AI**: "The customers table has the following structure:
+- id (integer, primary key)
+- name (text)
+- email (text)
+- registration_date (date)
+- last_purchase (date)
+- total_spent (numeric)"
 
-  # PostgreSQL URL configuration with SSL
-  prod-db:
-    type: postgres
-    url: postgresql://postgres.example.com:5432/prod-db?sslmode=verify-full
-    user: prod_user
-    password: prod_pass
-    
-  # PostgreSQL full SSL configuration example
-  secure-db:
-    type: postgres
-    host: secure-db.example.com
-    port: 5432
-    dbname: secure_db
-    user: secure_user
-    password: secure_pass
-    ssl:
-      mode: verify-full  # disable/require/verify-ca/verify-full
-      cert: /path/to/client-cert.pem
-      key: /path/to/client-key.pem
-      root: /path/to/root.crt
-      
-  # MySQL standard configuration
-  sandbox-mysql:
-    type: mysql
-    host: localhost
-    port: 3306
-    database: sandbox_db
-    user: sandbox_user
-    password: sandbox_pass
-    charset: utf8mb4
+**You**: "How many customers made purchases in the last month?"
 
-  # MySQL URL configuration
-  integration-mysql:
-    type: mysql
-    url: mysql://mysql.example.com:3306/integration_db?charset=utf8mb4
-    user: integration_user
-    password: integration_pass
-    
-  # MySQL with SSL configuration
-  secure-mysql:
-    type: mysql
-    host: secure-mysql.example.com
-    port: 3306
-    database: secure_db
-    user: secure_user
-    password: secure_pass
-    charset: utf8mb4
-    ssl:
-      mode: verify_identity
-      ca: /path/to/ca.pem
-      cert: /path/to/client-cert.pem
-      key: /path/to/client-key.pem
-```
+**AI**: "Let me run a query to find out... According to the data, 128 customers made purchases in the last month. The total value of these purchases was $25,437.82."
 
-Database SSL Configuration Options:
+## Available Tools
 
-PostgreSQL SSL Configuration:
-1. Using URL parameters:
-   ```
-   postgresql://host:port/dbname?sslmode=verify-full&sslcert=/path/to/cert.pem
-   ```
-2. Using dedicated SSL configuration section:
-   ```yaml
-   ssl:
-     mode: verify-full  # SSL verification mode
-     cert: /path/to/cert.pem      # Client certificate
-     key: /path/to/key.pem        # Client private key
-     root: /path/to/root.crt      # CA certificate
-   ```
+MCP Database Utilities provides several tools that your AI can use:
 
-PostgreSQL SSL Modes:
-- disable: No SSL
-- require: Use SSL but no certificate verification
-- verify-ca: Verify server certificate is signed by trusted CA
-- verify-full: Verify server certificate and hostname match
+- **dbutils-list-tables**: Lists all tables in a database
+- **dbutils-run-query**: Executes a SQL query (SELECT only)
+- **dbutils-get-stats**: Gets statistics about a table
+- **dbutils-list-constraints**: Lists table constraints
+- **dbutils-explain-query**: Gets query execution plan
+- **dbutils-get-performance**: Gets database performance metrics
+- **dbutils-analyze-query**: Analyzes queries for optimization
 
-MySQL SSL Configuration:
-1. Using URL parameters:
-   ```
-   mysql://host:port/dbname?ssl-mode=verify_identity&ssl-ca=/path/to/ca.pem
-   ```
-2. Using dedicated SSL configuration section:
-   ```yaml
-   ssl:
-     mode: verify_identity  # SSL verification mode
-     ca: /path/to/ca.pem         # CA certificate
-     cert: /path/to/cert.pem     # Client certificate
-     key: /path/to/key.pem       # Client private key
-   ```
+## Need More Help?
 
-MySQL SSL Modes:
-- disabled: No SSL
-- preferred: Use SSL if available, but allow unencrypted connection
-- required: Always use SSL, but don't verify server certificate
-- verify_ca: Verify server certificate is signed by trusted CA
-- verify_identity: Verify server certificate and hostname match
+- [Technical Documentation](docs/technical-guide.md) - For developers and advanced users
+- [GitHub Issues](https://github.com/donghao1393/mcp-dbutils/issues) - Report bugs or request features
+- [Smithery](https://smithery.ai/server/@donghao1393/mcp-dbutils) - Simplified installation and updates
 
-SQLite Configuration Options:
-1. Basic configuration with path:
-   ```yaml
-   type: sqlite
-   path: /path/to/db.sqlite
-   password: optional_password  # Optional encryption
-   ```
-2. Using URI parameters:
-   ```yaml
-   type: sqlite
-   path: /path/to/db.sqlite?mode=ro&cache=shared
-   ```
+## License
 
-### Debug Mode
-Set environment variable `MCP_DEBUG=1` to enable debug mode for detailed logging output.
-
-## Architecture Design
-
-### Core Concept: Abstraction Layer
-
-```mermaid
-graph TD
-  Client[Client] --> DatabaseServer[Database Server]
-  subgraph MCP Server
-    DatabaseServer
-    DatabaseHandler[Database Handler]
-    PostgresHandler[PostgreSQL Handler]
-    SQLiteHandler[SQLite Handler]
-    MySQLHandler[MySQL Handler]
-    DatabaseServer --> DatabaseHandler
-    DatabaseHandler --> PostgresHandler
-    DatabaseHandler --> SQLiteHandler
-    DatabaseHandler --> MySQLHandler
-  end
-  PostgresHandler --> PostgreSQL[(PostgreSQL)]
-  SQLiteHandler --> SQLite[(SQLite)]
-  MySQLHandler --> MySQL[(MySQL)]
-```
-
-The abstraction layer design is the core architectural concept in MCP Database Utilities. Just like a universal remote control that works with different devices, users only need to know the basic operations without understanding the underlying complexities.
-
-#### 1. Simplified User Interaction
-- Users only need to know the database configuration name (e.g., "my_postgres")
-- No need to deal with connection parameters and implementation details
-- MCP server automatically handles database connections and queries
-
-#### 2. Unified Interface Design
-- DatabaseHandler abstract class defines unified operation interfaces
-- All specific database implementations (PostgreSQL/SQLite/MySQL) follow the same interface
-- Users interact with different databases in the same way
-
-#### 3. Configuration and Implementation Separation
-- Complex database configuration parameters are encapsulated in configuration files
-- Runtime access through simple database names
-- Easy management and modification of database configurations without affecting business code
-
-### System Components
-1. DatabaseServer
-   - Core component of the MCP server
-   - Handles resource and tool requests
-   - Manages database connection lifecycle
-
-2. DatabaseHandler
-   - Abstract base class defining unified interface
-   - Includes get_tables(), get_schema(), execute_query(), etc.
-   - Implemented by PostgreSQL, SQLite, and MySQL handlers
-
-3. Configuration System
-   - YAML-based configuration file
-   - Support for multiple database configurations
-   - Type-safe configuration validation
-
-4. Error Handling and Logging
-   - Unified error handling mechanism
-   - Detailed logging output
-   - Sensitive information masking
-
-## Usage Examples
-
-### Basic Query
-```python
-# Access through connection name
-async with server.get_handler("my_postgres") as handler:
-    # Execute SQL query
-    result = await handler.execute_query("SELECT * FROM users")
-```
-
-### View Table Structure
-```python
-# Get all tables
-tables = await handler.get_tables()
-
-# Get specific table schema
-schema = await handler.get_schema("users")
-```
-
-### Error Handling
-```python
-try:
-    async with server.get_handler("my_connection") as handler:
-        result = await handler.execute_query("SELECT * FROM users")
-except ValueError as e:
-    print(f"Configuration error: {e}")
-except Exception as e:
-    print(f"Query error: {e}")
-```
-
-## Security Notes
-- Supports SELECT queries only to protect database security
-- Automatically masks sensitive information (like passwords) in logs
-- Executes queries in read-only transactions
-
-## API Documentation
-
-### DatabaseServer
-Core server class providing:
-- Resource list retrieval
-- Tool call handling (list_tables, query)
-- Database handler management
-
-### MCP Tools
-
-#### dbutils-list-tables
-Lists all tables in the specified database.
-- Parameters:
-  * connection: Database connection name
-- Returns: Text content with a list of table names
-
-#### dbutils-run-query
-Executes a SQL query on the specified database.
-- Parameters:
-  * connection: Database connection name
-  * sql: SQL query to execute (SELECT only)
-- Returns: Query results in a formatted text
-
-#### dbutils-get-stats
-Get table statistics information.
-- Parameters:
-  * connection: Database connection name
-  * table: Table name
-- Returns: Statistics including row count, size, column stats
-
-#### dbutils-list-constraints
-List table constraints (primary key, foreign keys, etc).
-- Parameters:
-  * connection: Database connection name
-  * table: Table name
-- Returns: Detailed constraint information
-
-#### dbutils-explain-query
-Get query execution plan with cost estimates.
-- Parameters:
-  * connection: Database connection name
-  * sql: SQL query to explain
-- Returns: Formatted execution plan
-
-#### dbutils-get-performance
-Get database performance statistics.
-- Parameters:
-  * connection: Database connection name
-- Returns: Detailed performance statistics including query times, query types, error rates, and resource usage
-
-#### dbutils-analyze-query
-Analyze a SQL query for performance and provide optimization suggestions.
-- Parameters:
-  * connection: Database connection name
-  * sql: SQL query to analyze
-- Returns: Query analysis with execution plan, timing information, and optimization suggestions
-
-### DatabaseHandler
-Abstract base class defining interfaces:
-- get_tables(): Get table resource list
-- get_schema(): Get table structure
-- execute_query(): Execute SQL query
-- cleanup(): Resource cleanup
-
-### PostgreSQL Implementation
-Provides PostgreSQL-specific features:
-- Remote connection support
-- Table description information
-- Constraint queries
-
-### SQLite Implementation
-Provides SQLite-specific features:
-- File path handling
-- URI scheme support
-- Password protection support (optional)
-
-### MySQL Implementation
-Provides MySQL-specific features:
-- Remote connection support
-- Character set configuration
-- SSL/TLS secure connection
-- URL and standard connection methods
-
-## Code Quality
-
-### Quality Gates
-We use SonarCloud to maintain high code quality standards. All pull requests must pass the following quality gates:
-
-- Code Coverage: ≥ 80%
-- Code Quality:
-  * No blocker or critical issues
-  * Less than 10 major issues
-  * Code duplication < 3%
-- Security:
-  * No security vulnerabilities
-  * No security hotspots
-
-### Automated Checks
-Our CI/CD pipeline automatically performs:
-1. Full test suite execution
-2. Code coverage analysis
-3. SonarCloud static code analysis
-4. Quality gate validation
-
-Pull requests that don't meet these standards will be automatically blocked from merging.
-
-### Code Style
-We use Ruff for code style checking and formatting:
-
-[![Code Style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-
-All code must follow our style guide:
-- Line length: 88 characters
-- Indentation: 4 spaces
-- Quotes: Double quotes
-- Naming: PEP8 conventions
-
-For detailed guidelines, see [STYLE_GUIDE.md](docs/STYLE_GUIDE.md).
-
-### Local Development
-To check code quality locally:
-1. Run tests with coverage:
-   ```bash
-   pytest --cov=src/mcp_dbutils --cov-report=xml:coverage.xml tests/
-   ```
-2. Use SonarLint in your IDE to catch issues early
-3. Review SonarCloud analysis results in PR comments
-4. Run Ruff for code style checking:
-   ```bash
-   # Install Ruff
-   uv pip install ruff
-   
-   # Check code style
-   ruff check .
-   
-   # Format code
-   ruff format .
-   ```
-5. Use pre-commit hooks for automatic checks:
-   ```bash
-   # Install pre-commit
-   uv pip install pre-commit
-   pre-commit install
-   
-   # Run all checks
-   pre-commit run --all-files
-   ```
-
-### SonarCloud AI Integration
-We've implemented an AI-assisted workflow for fixing SonarCloud issues:
-
-1. Our CI/CD pipeline automatically extracts SonarCloud analysis results
-2. Results are formatted into both JSON and Markdown formats
-3. These reports can be downloaded using the provided Fish function
-4. The reports can then be provided to AI tools for analysis and fix suggestions
-
-For detailed instructions, see [SonarCloud AI Integration Guide](docs/sonarcloud-ai-integration.md).
-
-```bash
-# Load the function
-source scripts/sonar-ai-fix.fish
-
-# Download the latest SonarCloud analysis reports
-sonar-ai-fix
-```
-
-## Contributing
-Contributions are welcome! Here's how you can help:
-
-1. 🐛 Report bugs: Open an issue describing the bug and how to reproduce it
-2. 💡 Suggest features: Open an issue to propose new features
-3. 🛠️ Submit PRs: Fork the repo and create a pull request with your changes
-
-### Development Setup
-1. Clone the repository
-2. Create a virtual environment using `uv venv`
-3. Install dependencies with `uv sync --all-extras`
-4. Run tests with `pytest`
-
-For detailed guidelines, see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
-
-## Acknowledgments
-- [MCP Servers](https://github.com/modelcontextprotocol/servers) for inspiration and demonstration
-- AI Editors:
-  * [Claude Desktop](https://claude.ai/download)
-  * [Cline](https://cline.bot)
-- [Model Context Protocol](https://modelcontextprotocol.io/) for comprehensive interfaces
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=donghao1393/mcp-dbutils&type=Date)](https://star-history.com/#donghao1393/mcp-dbutils&Date)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
