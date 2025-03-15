@@ -1,3 +1,10 @@
+## [0.15.4](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.3...v0.15.4) (2025-03-15)
+
+
+### Bug Fixes
+
+* 修复并启用test_list_tables_tool_errors测试 ([#47](https://github.com/donghao1393/mcp-dbutils/issues/47)) ([2dd707e](https://github.com/donghao1393/mcp-dbutils/commit/2dd707ecbca0e7cdf02721a5a3caf243537874fe)), closes [#46](https://github.com/donghao1393/mcp-dbutils/issues/46)
+
 ## [0.15.3](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.2...v0.15.3) (2025-03-15)
 
 
