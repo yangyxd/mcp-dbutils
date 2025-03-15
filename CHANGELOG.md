@@ -1,3 +1,10 @@
+## [0.15.5](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.4...v0.15.5) (2025-03-15)
+
+
+### Bug Fixes
+
+* modify release workflow to preserve ruff target-version ([#49](https://github.com/donghao1393/mcp-dbutils/issues/49)) ([b071954](https://github.com/donghao1393/mcp-dbutils/commit/b071954b479613ea0bef7c2f4fb04ccd350dddfb))
+
 ## [0.15.4](https://github.com/donghao1393/mcp-dbutils/compare/v0.15.3...v0.15.4) (2025-03-15)
 
 
