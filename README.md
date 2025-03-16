@@ -274,6 +274,10 @@ MCP Database Utilities provides several tools that your AI can use:
 - [GitHub Issues](https://github.com/donghao1393/mcp-dbutils/issues) - Report bugs or request features
 - [Smithery](https://smithery.ai/server/@donghao1393/mcp-dbutils) - Simplified installation and updates
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=donghao1393/mcp-dbutils&type=Date)](https://star-history.com/#donghao1393/mcp-dbutils&Date)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -285,6 +285,10 @@ MCP 数据库工具提供了几个您的 AI 可以使用的工具：
 - [GitHub Issues](https://github.com/donghao1393/mcp-dbutils/issues) - 报告错误或请求功能
 - [Smithery](https://smithery.ai/server/@donghao1393/mcp-dbutils) - 简化安装和更新
 
+## 星标历史
+
+[![星标历史图表](https://api.star-history.com/svg?repos=donghao1393/mcp-dbutils&type=Date)](https://star-history.com/#donghao1393/mcp-dbutils&Date)
+
 ## 许可证
 
-该项目采用 MIT 许可证 - 详情请参阅 [LICENSE](LICENSE) 文件。
+本项目采用 MIT 许可证 - 有关详细信息，请参阅 [LICENSE](LICENSE) 文件。
