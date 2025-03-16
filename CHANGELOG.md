@@ -1,3 +1,10 @@
+# [0.17.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.16.1...v0.17.0) (2025-03-16)
+
+
+### Features
+
+* 添加本地SonarQube分析脚本 ([65326a3](https://github.com/donghao1393/mcp-dbutils/commit/65326a3aa3a61db353fd3c399a3c808e9a07e332))
+
 ## [0.16.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.16.0...v0.16.1) (2025-03-15)
 
 
