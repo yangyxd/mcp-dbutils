@@ -31,6 +31,35 @@ class MySQLHandler(ConnectionHandler):
         self.log("debug", f"Configuring connection with parameters: {masked_params}")
         self.pool = None
 
+    async def _check_table_exists(self, cursor, table_name: str) -> None:
+        """检查表是否存在
+        
+        Args:
+            cursor: 数据库游标
+            table_name: 表名
+            
+        Raises:
+            ConnectionHandlerError: 如果表不存在
+        """
+        cursor.execute("""
+            SELECT COUNT(*) as count
+            FROM information_schema.tables
+            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s
+        """, (self.config.database, table_name))
+        table_exists = cursor.fetchone()
+        
+        # Handle different formats of cursor results (dict or tuple)
+        if not table_exists:
+            raise ConnectionHandlerError(f"Table '{self.config.database}.{table_name}' doesn't exist")
+        
+        # If fetchone returns a dictionary (dictionary=True was used)
+        if isinstance(table_exists, dict) and 'count' in table_exists and table_exists['count'] == 0:
+            raise ConnectionHandlerError(f"Table '{self.config.database}.{table_name}' doesn't exist")
+        
+        # If fetchone returns a tuple
+        if isinstance(table_exists, tuple) and table_exists[0] == 0:
+            raise ConnectionHandlerError(f"Table '{self.config.database}.{table_name}' doesn't exist")
+    
     async def get_tables(self) -> list[types.Resource]:
         """Get all table resources"""
         try:
@@ -119,24 +148,30 @@ class MySQLHandler(ConnectionHandler):
             self.log("debug", f"Executing query: {sql}")
 
             with conn.cursor(dictionary=True) as cur:  # NOSONAR
-                # Start read-only transaction
-                cur.execute("SET TRANSACTION READ ONLY")
+                # Check if the query is a SELECT statement
+                sql_upper = sql.strip().upper()
+                is_select = sql_upper.startswith("SELECT")
+                
+                # Only set read-only transaction for SELECT statements
+                if is_select:
+                    cur.execute("SET TRANSACTION READ ONLY")
                 try:
                     cur.execute(sql)
-                    results = cur.fetchall()
+                    if not is_select:
+                        conn.commit()
+                    results = cur.fetchall() if is_select else []
+                    if cur.description is None:  # DDL statements
+                        return "Query executed successfully"
                     columns = [desc[0] for desc in cur.description]
-
-                    result_text = str({
-                        'type': self.db_type,
-                        'columns': columns,
-                        'rows': results,
-                        'row_count': len(results)
+                    return str({
+                        "columns": columns,
+                        "rows": results
                     })
-
-                    self.log("debug", f"Query completed, returned {len(results)} rows")
-                    return result_text
+                except mysql.connector.Error as e:
+                    self.log("error", f"Query error: {str(e)}")
+                    raise ConnectionHandlerError(str(e))
                 finally:
-                    cur.execute("ROLLBACK")
+                    cur.close()
         except mysql.connector.Error as e:
             error_msg = f"[{self.db_type}] Query execution failed: {str(e)}"
             raise ConnectionHandlerError(error_msg)
@@ -151,6 +186,9 @@ class MySQLHandler(ConnectionHandler):
             conn_params = self.config.get_connection_params()
             conn = mysql.connector.connect(**conn_params)
             with conn.cursor(dictionary=True) as cur:  # NOSONAR
+                # Check if table exists
+                await self._check_table_exists(cur, table_name)
+                
                 # Get table information and comment
                 cur.execute("""
                     SELECT 
@@ -243,6 +281,9 @@ class MySQLHandler(ConnectionHandler):
             conn_params = self.config.get_connection_params()
             conn = mysql.connector.connect(**conn_params)
             with conn.cursor(dictionary=True) as cur:  # NOSONAR
+                # Check if table exists
+                await self._check_table_exists(cur, table_name)
+
                 # Get index information
                 cur.execute("""
                     SELECT 
@@ -302,6 +343,9 @@ class MySQLHandler(ConnectionHandler):
             conn_params = self.config.get_connection_params()
             conn = mysql.connector.connect(**conn_params)
             with conn.cursor(dictionary=True) as cur:  # NOSONAR
+                # Check if table exists
+                await self._check_table_exists(cur, table_name)
+                
                 # Get table statistics
                 cur.execute("""
                     SELECT 
@@ -367,6 +411,9 @@ class MySQLHandler(ConnectionHandler):
             conn_params = self.config.get_connection_params()
             conn = mysql.connector.connect(**conn_params)
             with conn.cursor(dictionary=True) as cur:  # NOSONAR
+                # Check if table exists
+                await self._check_table_exists(cur, table_name)
+                
                 # Get constraint information
                 cur.execute("""
                     SELECT 

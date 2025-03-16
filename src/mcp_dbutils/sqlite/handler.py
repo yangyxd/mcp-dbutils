@@ -1,6 +1,7 @@
 """SQLite connection handler implementation"""
 
 import sqlite3
+import time
 
 import mcp.types as types
 
@@ -78,28 +79,51 @@ class SQLiteHandler(ConnectionHandler):
     async def _execute_query(self, sql: str) -> str:
         """Execute SQL query"""
         try:
-            # Only allow SELECT statements
-            if not sql.strip().upper().startswith("SELECT"):
-                raise ConnectionHandlerError("cannot execute DELETE statement")
-            
-            with sqlite3.connect(self.config.path) as conn:
-                conn.row_factory = sqlite3.Row
-                cur = conn.cursor()
-                self.log("debug", f"Executing query: {sql}")
-                
+            # Check if the query is a DDL statement
+            sql_upper = sql.strip().upper()
+            is_ddl = sql_upper.startswith(("CREATE", "DROP", "ALTER", "TRUNCATE"))
+            is_dml = sql_upper.startswith(("INSERT", "UPDATE", "DELETE"))
+            is_select = sql_upper.startswith("SELECT")
+
+            if not (is_select or is_ddl or is_dml):
+                raise ConnectionHandlerError("Only SELECT, DDL, and DML statements are allowed")
+
+            conn = sqlite3.connect(self.config.path)
+            cur = conn.cursor()
+
+            try:
+                start_time = time.time()
                 cur.execute(sql)
-                results = cur.fetchall()
-                rows = [dict(row) for row in results]
-
-                result_text = str({
-                    'type': self.db_type,
-                    'columns': list(rows[0].keys()) if rows else [],
-                    'rows': rows,
-                    'row_count': len(rows)
-                })
-
-                self.log("debug", f"Query completed, returned {len(rows)} rows")
-                return result_text
+                conn.commit()
+                end_time = time.time()
+                elapsed_ms = (end_time - start_time) * 1000
+                self.log("debug", f"Query executed in {elapsed_ms:.2f}ms")
+                
+                if is_select:
+                    # Get column names
+                    columns = [description[0] for description in cur.description]
+                    # Fetch results and convert to dictionaries
+                    results = []
+                    for row in cur.fetchall():
+                        # Convert each row to a dictionary
+                        row_dict = {}
+                        for i, col_name in enumerate(columns):
+                            row_dict[col_name] = row[i]
+                        results.append(row_dict)
+                    
+                    return str({
+                        "columns": columns,
+                        "rows": results
+                    })
+                else:
+                    # For DDL/DML statements
+                    return "Query executed successfully"
+            except sqlite3.Error as e:
+                self.log("error", f"Query error: {str(e)}")
+                raise ConnectionHandlerError(str(e))
+            finally:
+                cur.close()
+                conn.close()
         except sqlite3.Error as e:
             error_msg = f"[{self.db_type}] Query execution failed: {str(e)}"
             raise ConnectionHandlerError(error_msg)
@@ -173,6 +197,12 @@ class SQLiteHandler(ConnectionHandler):
         try:
             with sqlite3.connect(self.config.path) as conn:
                 cur = conn.cursor()
+                
+                # Check if table exists
+                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+                if not cur.fetchone():
+                    raise ConnectionHandlerError(f"Table '{table_name}' doesn't exist")
+                
                 # 获取索引列表
                 cur.execute(f"PRAGMA index_list({table_name})")
                 indexes = cur.fetchall()
@@ -220,6 +250,11 @@ class SQLiteHandler(ConnectionHandler):
         try:
             with sqlite3.connect(self.config.path) as conn:
                 cur = conn.cursor()
+                
+                # Check if table exists
+                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+                if not cur.fetchone():
+                    raise ConnectionHandlerError(f"Table '{table_name}' doesn't exist")
                 
                 # Get basic table information
                 cur.execute(f"PRAGMA table_info({table_name})")
@@ -381,6 +416,13 @@ class SQLiteHandler(ConnectionHandler):
         try:
             with sqlite3.connect(self.config.path) as conn:
                 cur = conn.cursor()
+                
+                # Check if the query is valid by preparing it
+                try:
+                    # Use prepare to validate the query without executing it
+                    conn.execute(f"EXPLAIN {sql}")
+                except sqlite3.Error as e:
+                    raise ConnectionHandlerError(f"Failed to explain query: {str(e)}")
                 
                 # Get EXPLAIN output
                 cur.execute(f"EXPLAIN QUERY PLAN {sql}")
