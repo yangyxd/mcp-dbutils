@@ -50,7 +50,7 @@ sonar-ai-fix
 
 1. 打开 `sonar_report.md` 文件：
    ```bash
-   cat sonar_report.md
+   bat sonar_report.md
    ```
 
 2. 将内容复制给 AI（如 Claude），并请求修复建议：
@@ -66,7 +66,7 @@ sonar-ai-fix
 
 1. 打开 JSON 文件：
    ```bash
-   cat sonar_issues.json
+   bat sonar_issues.json
    ```
 
 2. 将内容提供给 AI 进行更详细的分析：

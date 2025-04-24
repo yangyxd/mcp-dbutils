@@ -1,4 +1,4 @@
-# 配置示例集锦
+# 配置指南
 
 本文档提供了MCP数据库工具的各种配置示例，从基础配置到高级场景，帮助您正确设置和优化数据库连接。
 
@@ -354,59 +354,3 @@ connections:
 3. **验证凭据**：确认用户名和密码正确
 4. **路径问题**：对于SQLite，确保路径存在且有读取权限
 5. **SSL错误**：检查证书路径和权限，验证证书是否过期
-
-## 实际配置示例
-
-### 全面开发环境配置
-
-```yaml
-connections:
-  # 本地开发数据库
-  local-dev:
-    type: sqlite
-    path: ./development.db
-
-  # 本地PostgreSQL
-  local-pg:
-    type: postgres
-    host: localhost
-    port: 5432
-    dbname: dev_db
-    user: dev_user
-    password: dev_pass
-
-  # 本地MySQL
-  local-mysql:
-    type: mysql
-    host: localhost
-    port: 3306
-    database: dev_db
-    user: dev_user
-    password: dev_pass
-    charset: utf8mb4
-
-  # 远程测试数据库（带SSL）
-  remote-test:
-    type: postgres
-    host: test-db.example.com
-    port: 5432
-    dbname: test_db
-    user: test_user
-    password: test_pass
-    ssl:
-      mode: require  # 测试环境使用基本SSL
-
-  # 生产只读副本（最高安全级别）
-  prod-readonly:
-    type: postgres
-    host: prod-readonly.example.com
-    port: 5432
-    dbname: prod_db
-    user: readonly_user
-    password: readonly_pass
-    ssl:
-      mode: verify-full  # 生产环境使用完整验证
-      cert: /path/to/client-cert.pem
-      key: /path/to/client-key.pem
-      root: /path/to/root.crt
-```
