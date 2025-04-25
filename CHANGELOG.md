@@ -1,3 +1,10 @@
+# [0.19.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.18.0...v0.19.0) (2025-04-25)
+
+
+### Features
+
+* 完成多语言文档 ([#74](https://github.com/donghao1393/mcp-dbutils/issues/74)) ([aa5d7a6](https://github.com/donghao1393/mcp-dbutils/commit/aa5d7a6c4648bd575d538906d1dcd65ba5ba8c56))
+
 # [0.18.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.17.0...v0.18.0) (2025-04-25)
 
 
