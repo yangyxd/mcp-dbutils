@@ -1,3 +1,10 @@
+# [0.18.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.17.0...v0.18.0) (2025-04-25)
+
+
+### Features
+
+* add dbutils-list-connections tool ([#68](https://github.com/donghao1393/mcp-dbutils/issues/68)) ([44ce9ac](https://github.com/donghao1393/mcp-dbutils/commit/44ce9ac9a63fcd43a0c817ee72b508380f36ba8d))
+
 # [0.17.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.16.1...v0.17.0) (2025-03-16)
 
 
