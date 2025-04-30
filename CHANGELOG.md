@@ -1,3 +1,10 @@
+# [0.20.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.19.0...v0.20.0) (2025-04-30)
+
+
+### Features
+
+* add multilingual issue templates in six languages ([#77](https://github.com/donghao1393/mcp-dbutils/issues/77)) ([7a3d081](https://github.com/donghao1393/mcp-dbutils/commit/7a3d0819c126294858eb7bbcd0901193489639a5))
+
 # [0.19.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.18.0...v0.19.0) (2025-04-25)
 
 
