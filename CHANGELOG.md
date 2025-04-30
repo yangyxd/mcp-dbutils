@@ -1,3 +1,10 @@
+## [0.20.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.20.0...v0.20.1) (2025-04-30)
+
+
+### Bug Fixes
+
+* 修复MySQL和PostgreSQL处理器中变量作用域问题 ([#78](https://github.com/donghao1393/mcp-dbutils/issues/78)) ([9479e67](https://github.com/donghao1393/mcp-dbutils/commit/9479e677fb78346b6ef34ad474055f4df787a059)), closes [#75](https://github.com/donghao1393/mcp-dbutils/issues/75) [#75](https://github.com/donghao1393/mcp-dbutils/issues/75)
+
 # [0.20.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.19.0...v0.20.0) (2025-04-30)
 
 
