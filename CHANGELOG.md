@@ -1,3 +1,10 @@
+# [0.22.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.21.0...v0.22.0) (2025-05-01)
+
+
+### Features
+
+* 更新多语言文档中的工具描述 ([#83](https://github.com/donghao1393/mcp-dbutils/issues/83)) ([45c3c05](https://github.com/donghao1393/mcp-dbutils/commit/45c3c053975405f9d5e028d6d9441ab8e8de1a65))
+
 # [0.21.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.20.1...v0.21.0) (2025-05-01)
 
 
