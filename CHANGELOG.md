@@ -1,3 +1,10 @@
+# [0.21.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.20.1...v0.21.0) (2025-05-01)
+
+
+### Features
+
+* 优化数据库工具描述以提高LLM理解能力 ([#81](https://github.com/donghao1393/mcp-dbutils/issues/81)) ([232cd3e](https://github.com/donghao1393/mcp-dbutils/commit/232cd3ed247ed95248932001c99ed529819cddf8))
+
 ## [0.20.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.20.0...v0.20.1) (2025-04-30)
 
 
