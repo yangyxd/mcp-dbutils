@@ -1,3 +1,10 @@
+## [0.23.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.23.0...v0.23.1) (2025-05-03)
+
+
+### Bug Fixes
+
+* 移除不兼容的read_timeout_seconds参数 ([#86](https://github.com/donghao1393/mcp-dbutils/issues/86)) ([247047b](https://github.com/donghao1393/mcp-dbutils/commit/247047bc36efe320b3a4e6c8ae7d423d4666784c))
+
 # [0.23.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.22.0...v0.23.0) (2025-05-03)
 
 
