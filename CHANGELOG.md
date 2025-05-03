@@ -1,3 +1,10 @@
+# [0.23.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.22.0...v0.23.0) (2025-05-03)
+
+
+### Features
+
+* 升级MCP SDK从v1.2.1到v1.7.1 ([#85](https://github.com/donghao1393/mcp-dbutils/issues/85)) ([f0c4f9f](https://github.com/donghao1393/mcp-dbutils/commit/f0c4f9f6b99de4febb53b80a7036bd88b1d6dd39))
+
 # [0.22.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.21.0...v0.22.0) (2025-05-01)
 
 
