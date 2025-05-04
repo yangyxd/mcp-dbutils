@@ -12,6 +12,7 @@ import mcp.types as types
 import yaml
 from mcp.server import Server
 
+from .audit import format_logs, get_logs, log_write_operation
 from .log import create_logger
 from .stats import ResourceStats
 
@@ -42,6 +43,10 @@ EMPTY_TABLE_NAME_ERROR = "Table name cannot be empty"
 CONNECTION_NAME_REQUIRED_ERROR = "Connection name must be specified"
 SELECT_ONLY_ERROR = "Only SELECT queries are supported for security reasons"
 INVALID_URI_FORMAT_ERROR = "Invalid resource URI format"
+CONNECTION_NOT_WRITABLE_ERROR = "This connection is not configured for write operations. Add 'writable: true' to the connection configuration."
+WRITE_OPERATION_NOT_ALLOWED_ERROR = "No permission to perform {operation} operation on table {table}."
+WRITE_CONFIRMATION_REQUIRED_ERROR = "Operation not confirmed. To execute write operations, you must set confirmation='CONFIRM_WRITE'."
+UNSUPPORTED_WRITE_OPERATION_ERROR = "Unsupported SQL operation: {operation}. Only INSERT, UPDATE, DELETE are supported."
 
 # 获取包信息用于日志命名
 pkg_meta = metadata("mcp-dbutils")
@@ -116,6 +121,11 @@ class ConnectionHandler(ABC):
         """Internal query execution method to be implemented by subclasses"""
         pass
 
+    @abstractmethod
+    async def _execute_write_query(self, sql: str) -> str:
+        """Internal write query execution method to be implemented by subclasses"""
+        pass
+
     async def execute_query(self, sql: str) -> str:
         """Execute SQL query with performance tracking"""
         start_time = datetime.now()
@@ -138,6 +148,170 @@ class ConnectionHandler(ABC):
                 f"Query error after {duration * 1000:.2f}ms - {str(e)}\nResource stats: {json.dumps(self.stats.to_dict())}",
             )
             raise
+
+    async def execute_write_query(self, sql: str) -> str:
+        """Execute SQL write query with performance tracking
+
+        Args:
+            sql: SQL write query (INSERT, UPDATE, DELETE)
+
+        Returns:
+            str: Execution result
+
+        Raises:
+            ValueError: If the SQL is not a write operation
+        """
+        # Validate SQL type
+        sql_type = self._get_sql_type(sql)
+        if sql_type not in ["INSERT", "UPDATE", "DELETE"]:
+            raise ValueError(UNSUPPORTED_WRITE_OPERATION_ERROR.format(operation=sql_type))
+
+        # Extract table name
+        table_name = self._extract_table_name(sql)
+
+        start_time = datetime.now()
+        affected_rows = 0
+        status = "SUCCESS"
+        error_message = None
+
+        try:
+            self.stats.record_query()
+            self.send_log(
+                LOG_LEVEL_INFO,
+                f"Executing write operation: {sql_type} on table {table_name}",
+            )
+
+            result = await self._execute_write_query(sql)
+
+            # 尝试从结果中提取受影响的行数
+            try:
+                if "row" in result and "affected" in result:
+                    # 从结果字符串中提取受影响的行数
+                    import re
+                    # 使用更安全的正则表达式，避免回溯问题
+                    match = re.search(r"(\d+) rows?", result)
+                    if match:
+                        affected_rows = int(match.group(1))
+            except Exception:
+                # 如果无法提取，使用默认值
+                affected_rows = 1
+
+            duration = (datetime.now() - start_time).total_seconds()
+            self.stats.record_query_duration(sql, duration)
+            self.stats.update_memory_usage(result)
+
+            # 记录审计日志
+            log_write_operation(
+                connection_name=self.connection,
+                table_name=table_name,
+                operation_type=sql_type,
+                sql=sql,
+                affected_rows=affected_rows,
+                execution_time=duration * 1000,  # 转换为毫秒
+                status=status,
+                error_message=error_message
+            )
+
+            self.send_log(
+                LOG_LEVEL_INFO,
+                f"Write operation executed in {duration * 1000:.2f}ms. Resource stats: {json.dumps(self.stats.to_dict())}",
+            )
+            return result
+        except Exception as e:
+            duration = (datetime.now() - start_time).total_seconds()
+            self.stats.record_error(e.__class__.__name__)
+            status = "FAILED"
+            error_message = str(e)
+
+            # 记录审计日志（失败）
+            log_write_operation(
+                connection_name=self.connection,
+                table_name=table_name,
+                operation_type=sql_type,
+                sql=sql,
+                affected_rows=0,
+                execution_time=duration * 1000,  # 转换为毫秒
+                status=status,
+                error_message=error_message
+            )
+
+            self.send_log(
+                LOG_LEVEL_ERROR,
+                f"Write operation error after {duration * 1000:.2f}ms - {str(e)}\nResource stats: {json.dumps(self.stats.to_dict())}",
+            )
+            raise
+
+    def _get_sql_type(self, sql: str) -> str:
+        """Get SQL statement type
+
+        Args:
+            sql: SQL statement
+
+        Returns:
+            str: SQL statement type (SELECT, INSERT, UPDATE, DELETE, etc.)
+        """
+        sql = sql.strip().upper()
+        if sql.startswith("SELECT"):
+            return "SELECT"
+        elif sql.startswith("INSERT"):
+            return "INSERT"
+        elif sql.startswith("UPDATE"):
+            return "UPDATE"
+        elif sql.startswith("DELETE"):
+            return "DELETE"
+        elif sql.startswith("CREATE"):
+            return "CREATE"
+        elif sql.startswith("ALTER"):
+            return "ALTER"
+        elif sql.startswith("DROP"):
+            return "DROP"
+        elif sql.startswith("TRUNCATE"):
+            return "TRUNCATE"
+        elif sql.startswith("BEGIN") or sql.startswith("START"):
+            return "TRANSACTION_START"
+        elif sql.startswith("COMMIT"):
+            return "TRANSACTION_COMMIT"
+        elif sql.startswith("ROLLBACK"):
+            return "TRANSACTION_ROLLBACK"
+        else:
+            return "UNKNOWN"
+
+    def _extract_table_name(self, sql: str) -> str:
+        """Extract table name from SQL statement
+
+        This is a simple implementation that works for basic SQL statements.
+        Subclasses may override this method to provide more accurate table name extraction.
+
+        Args:
+            sql: SQL statement
+
+        Returns:
+            str: Table name
+        """
+        sql_type = self._get_sql_type(sql)
+        sql = sql.strip()
+
+        if sql_type == "INSERT":
+            # INSERT INTO table_name ...
+            match = sql.upper().split("INTO", 1)
+            if len(match) > 1:
+                table_part = match[1].strip().split(" ", 1)[0]
+                return table_part.strip('`"[]')
+        elif sql_type == "UPDATE":
+            # UPDATE table_name ...
+            match = sql.upper().split("UPDATE", 1)
+            if len(match) > 1:
+                table_part = match[1].strip().split(" ", 1)[0]
+                return table_part.strip('`"[]')
+        elif sql_type == "DELETE":
+            # DELETE FROM table_name ...
+            match = sql.upper().split("FROM", 1)
+            if len(match) > 1:
+                table_part = match[1].strip().split(" ", 1)[0]
+                return table_part.strip('`"[]')
+
+        # Default fallback
+        return "unknown_table"
 
     @abstractmethod
     async def get_table_description(self, table_name: str) -> str:
@@ -356,6 +530,140 @@ class ConnectionServer:
 
             return db_config
 
+    def _get_sql_type(self, sql: str) -> str:
+        """Get SQL statement type
+
+        Args:
+            sql: SQL statement
+
+        Returns:
+            str: SQL statement type (SELECT, INSERT, UPDATE, DELETE, etc.)
+        """
+        sql = sql.strip().upper()
+        if sql.startswith("SELECT"):
+            return "SELECT"
+        elif sql.startswith("INSERT"):
+            return "INSERT"
+        elif sql.startswith("UPDATE"):
+            return "UPDATE"
+        elif sql.startswith("DELETE"):
+            return "DELETE"
+        elif sql.startswith("CREATE"):
+            return "CREATE"
+        elif sql.startswith("ALTER"):
+            return "ALTER"
+        elif sql.startswith("DROP"):
+            return "DROP"
+        elif sql.startswith("TRUNCATE"):
+            return "TRUNCATE"
+        elif sql.startswith("BEGIN") or sql.startswith("START"):
+            return "TRANSACTION_START"
+        elif sql.startswith("COMMIT"):
+            return "TRANSACTION_COMMIT"
+        elif sql.startswith("ROLLBACK"):
+            return "TRANSACTION_ROLLBACK"
+        else:
+            return "UNKNOWN"
+
+    def _extract_table_name(self, sql: str) -> str:
+        """Extract table name from SQL statement
+
+        This is a simple implementation that works for basic SQL statements.
+
+        Args:
+            sql: SQL statement
+
+        Returns:
+            str: Table name
+        """
+        sql_type = self._get_sql_type(sql)
+        sql = sql.strip()
+
+        if sql_type == "INSERT":
+            # INSERT INTO table_name ...
+            match = sql.upper().split("INTO", 1)
+            if len(match) > 1:
+                table_part = match[1].strip().split(" ", 1)[0]
+                return table_part.strip('`"[]')
+        elif sql_type == "UPDATE":
+            # UPDATE table_name ...
+            match = sql.upper().split("UPDATE", 1)
+            if len(match) > 1:
+                table_part = match[1].strip().split(" ", 1)[0]
+                return table_part.strip('`"[]')
+        elif sql_type == "DELETE":
+            # DELETE FROM table_name ...
+            match = sql.upper().split("FROM", 1)
+            if len(match) > 1:
+                table_part = match[1].strip().split(" ", 1)[0]
+                return table_part.strip('`"[]')
+
+        # Default fallback
+        return "unknown_table"
+
+    async def _check_write_permission(self, connection: str, table_name: str, operation_type: str) -> bool:
+        """检查写操作权限
+
+        Args:
+            connection: 数据库连接名称
+            table_name: 表名
+            operation_type: 操作类型 (INSERT, UPDATE, DELETE)
+
+        Returns:
+            bool: 是否有权限执行写操作
+
+        Raises:
+            ConfigurationError: 如果连接不可写或没有表级权限
+        """
+        # 获取连接配置
+        db_config = self._get_config_or_raise(connection)
+
+        # 检查连接是否可写
+        if not db_config.get("writable", False):
+            raise ConfigurationError(CONNECTION_NOT_WRITABLE_ERROR)
+
+        # 检查是否有写权限配置
+        write_permissions = db_config.get("write_permissions", {})
+        if not write_permissions:
+            # 没有细粒度权限控制，默认允许所有写操作
+            return True
+
+        # 检查表级权限
+        tables = write_permissions.get("tables", {})
+        if not tables:
+            # 没有表级权限配置，检查默认策略
+            default_policy = write_permissions.get("default_policy", "read_only")
+            if default_policy == "allow_all":
+                return True
+            else:
+                # 默认只读
+                raise ConfigurationError(WRITE_OPERATION_NOT_ALLOWED_ERROR.format(
+                    operation=operation_type, table=table_name
+                ))
+
+        # 检查特定表的权限
+        if table_name in tables:
+            table_config = tables[table_name]
+            operations = table_config.get("operations", ["INSERT", "UPDATE", "DELETE"])
+            if operation_type in operations:
+                return True
+            else:
+                raise ConfigurationError(WRITE_OPERATION_NOT_ALLOWED_ERROR.format(
+                    operation=operation_type, table=table_name
+                ))
+        else:
+            # 表未明确配置，检查默认策略
+            default_policy = write_permissions.get("default_policy", "read_only")
+            if default_policy == "allow_all":
+                return True
+            else:
+                # 默认只读
+                raise ConfigurationError(WRITE_OPERATION_NOT_ALLOWED_ERROR.format(
+                    operation=operation_type, table=table_name
+                ))
+
+        return False
+
     def _create_handler_for_type(
         self, db_type: str, connection: str
     ) -> ConnectionHandler:
@@ -456,6 +764,54 @@ class ConnectionServer:
                     },
                     "required": [],
                 },
+            ),
+            types.Tool(
+                name="dbutils-execute-write",
+                description="CAUTION: This tool executes data modification operations (INSERT, UPDATE, DELETE) on the specified database. It requires explicit configuration and confirmation. Only available for connections with 'writable: true' in configuration. All operations are logged for audit purposes.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "connection": {
+                            "type": "string",
+                            "description": DATABASE_CONNECTION_NAME,
+                        },
+                        "sql": {
+                            "type": "string",
+                            "description": "SQL statement (INSERT, UPDATE, DELETE)",
+                        },
+                        "confirmation": {
+                            "type": "string",
+                            "description": "Type 'CONFIRM_WRITE' to confirm you understand the risks",
+                        },
+                    },
+                    "required": ["connection", "sql", "confirmation"],
+                },
+                annotations={
+                    "examples": [
+                        {
+                            "input": {
+                                "connection": "example_db",
+                                "sql": "INSERT INTO logs (event, timestamp) VALUES ('event1', CURRENT_TIMESTAMP)",
+                                "confirmation": "CONFIRM_WRITE"
+                            },
+                            "output": "Write operation executed successfully. 1 row affected."
+                        },
+                        {
+                            "input": {
+                                "connection": "example_db",
+                                "sql": "UPDATE users SET status = 'active' WHERE id = 123",
+                                "confirmation": "CONFIRM_WRITE"
+                            },
+                            "output": "Write operation executed successfully. 1 row affected."
+                        }
+                    ],
+                    "usage_tips": [
+                        "Always confirm with 'CONFIRM_WRITE' to execute write operations",
+                        "Connection must have 'writable: true' in configuration",
+                        "Consider using transactions for multiple related operations",
+                        "Check audit logs after write operations to verify changes"
+                    ]
+                }
             ),
             types.Tool(
                 name="dbutils-run-query",
@@ -663,6 +1019,39 @@ class ConnectionServer:
                         },
                     },
                     "required": ["connection", "sql"],
+                },
+            ),
+            types.Tool(
+                name="dbutils-get-audit-logs",
+                description="Retrieves audit logs for database write operations. Shows who performed what operations, when, and with what results. Useful for security monitoring, compliance, and troubleshooting.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "connection": {
+                            "type": "string",
+                            "description": "Filter logs by connection name",
+                        },
+                        "table": {
+                            "type": "string",
+                            "description": "Filter logs by table name",
+                        },
+                        "operation_type": {
+                            "type": "string",
+                            "description": "Filter logs by operation type (INSERT, UPDATE, DELETE)",
+                            "enum": ["INSERT", "UPDATE", "DELETE"]
+                        },
+                        "status": {
+                            "type": "string",
+                            "description": "Filter logs by operation status (SUCCESS, FAILED)",
+                            "enum": ["SUCCESS", "FAILED"]
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "description": "Maximum number of logs to return",
+                            "default": 100
+                        }
+                    },
+                    "required": [],
                 },
             ),
         ]
@@ -932,6 +1321,110 @@ class ConnectionServer:
 
             return [types.TextContent(type="text", text="\n".join(analysis))]
 
+    async def _handle_execute_write(
+        self, connection: str, sql: str, confirmation: str
+    ) -> list[types.TextContent]:
+        """处理执行写操作工具调用
+
+        Args:
+            connection: 数据库连接名称
+            sql: SQL写操作语句
+            confirmation: 确认字符串
+
+        Returns:
+            list[types.TextContent]: 执行结果
+
+        Raises:
+            ConfigurationError: 如果SQL为空、确认字符串不正确、连接不可写或没有表级权限
+        """
+        if not sql:
+            raise ConfigurationError(EMPTY_QUERY_ERROR)
+
+        # 验证确认字符串
+        if confirmation != "CONFIRM_WRITE":
+            raise ConfigurationError(WRITE_CONFIRMATION_REQUIRED_ERROR)
+
+        # 获取SQL类型和表名
+        sql_type = self._get_sql_type(sql.strip())
+        if sql_type not in ["INSERT", "UPDATE", "DELETE"]:
+            raise ConfigurationError(UNSUPPORTED_WRITE_OPERATION_ERROR.format(operation=sql_type))
+
+        table_name = self._extract_table_name(sql)
+
+        # 获取连接配置并验证写权限
+        db_config = self._get_config_or_raise(connection)
+        await self._check_write_permission(connection, table_name, sql_type)
+
+        # 执行写操作
+        async with self.get_handler(connection) as handler:
+            self.send_log(
+                LOG_LEVEL_NOTICE,
+                f"Executing write operation: {sql_type} on table {table_name} in connection {connection}",
+            )
+
+            try:
+                result = await handler.execute_write_query(sql)
+                self.send_log(
+                    LOG_LEVEL_INFO,
+                    f"Write operation executed successfully: {sql_type} on table {table_name}",
+                )
+                return [types.TextContent(type="text", text=result)]
+            except Exception as e:
+                self.send_log(
+                    LOG_LEVEL_ERROR,
+                    f"Write operation failed: {str(e)}",
+                )
+                raise
+
+    async def _handle_get_audit_logs(
+        self,
+        connection: str = None,
+        table: str = None,
+        operation_type: str = None,
+        status: str = None,
+        limit: int = 100
+    ) -> list[types.TextContent]:
+        """处理获取审计日志工具调用
+
+        Args:
+            connection: 数据库连接名称（可选）
+            table: 表名（可选）
+            operation_type: 操作类型（可选，INSERT/UPDATE/DELETE）
+            status: 操作状态（可选，SUCCESS/FAILED）
+            limit: 返回记录数量限制
+
+        Returns:
+            list[types.TextContent]: 审计日志
+        """
+        # 获取审计日志
+        logs = get_logs(
+            connection_name=connection,
+            table_name=table,
+            operation_type=operation_type,
+            status=status,
+            limit=limit
+        )
+
+        # 格式化日志
+        formatted_logs = format_logs(logs)
+
+        # 添加过滤条件信息
+        filter_info = []
+        if connection:
+            filter_info.append(f"Connection: {connection}")
+        if table:
+            filter_info.append(f"Table: {table}")
+        if operation_type:
+            filter_info.append(f"Operation: {operation_type}")
+        if status:
+            filter_info.append(f"Status: {status}")
+
+        if filter_info:
+            filter_text = "Filters applied: " + ", ".join(filter_info)
+            formatted_logs = f"{filter_text}\n\n{formatted_logs}"
+
+        return [types.TextContent(type="text", text=formatted_logs)]
+
     def _get_optimization_suggestions(
         self, explain_result: str, duration: float
     ) -> list[str]:
@@ -1028,6 +1521,16 @@ class ConnectionServer:
             elif name == "dbutils-analyze-query":
                 sql = arguments.get("sql", "").strip()
                 return await self._handle_analyze_query(connection, sql)
+            elif name == "dbutils-execute-write":
+                sql = arguments.get("sql", "").strip()
+                confirmation = arguments.get("confirmation", "").strip()
+                return await self._handle_execute_write(connection, sql, confirmation)
+            elif name == "dbutils-get-audit-logs":
+                table = arguments.get("table", "").strip()
+                operation_type = arguments.get("operation_type", "").strip()
+                status = arguments.get("status", "").strip()
+                limit = arguments.get("limit", 100)
+                return await self._handle_get_audit_logs(connection, table, operation_type, status, limit)
             else:
                 raise ConfigurationError(f"Unknown tool: {name}")
 
