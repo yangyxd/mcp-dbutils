@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.0...v1.0.1) (2025-05-04)
+
+
+### Bug Fixes
+
+* 提高代码覆盖率以解决SonarCloud检查失败问题 ([#90](https://github.com/donghao1393/mcp-dbutils/issues/90)) ([adbc9f2](https://github.com/donghao1393/mcp-dbutils/commit/adbc9f2e6fb54ed446d96775c65edf67611637ed))
+
 # [1.0.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.23.1...v1.0.0) (2025-05-04)
 
 
