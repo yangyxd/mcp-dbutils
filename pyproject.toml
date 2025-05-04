@@ -1,6 +1,6 @@
 [project]
 name = "mcp-dbutils"
-version = "0.23.1"
+version = "1.0.0"
 description = "MCP Database Utilities Service"
 readme = "README.md"
 license = "MIT"

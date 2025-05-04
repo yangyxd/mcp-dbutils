@@ -1,3 +1,138 @@
+# [1.0.0](https://github.com/donghao1393/mcp-dbutils/compare/v0.23.1...v1.0.0) (2025-05-04)
+
+
+### Features
+
+* 添加数据库写操作功能 ([#88](https://github.com/donghao1393/mcp-dbutils/issues/88)) ([7703cdf](https://github.com/donghao1393/mcp-dbutils/commit/7703cdf58dd706b300e5f9a89b1b530274e36fe0))
+
+
+### BREAKING CHANGES
+
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* feat: 添加数据库写操作配置支持
+
+在配置系统中添加对数据库写操作的支持：
+1. 在ConnectionConfig基类中添加writable和write_permissions属性
+2. 创建WritePermissions类处理表级和操作级权限控制
+3. 修改SQLite、PostgreSQL和MySQL配置类以支持写操作配置
+4. 添加配置验证逻辑确保安全性
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* feat: 添加数据库写操作基础功能
+
+在基础类中添加数据库写操作支持：
+1. 添加写操作相关的常量和错误消息
+2. 在ConnectionHandler类中添加写操作相关方法
+3. 添加SQL类型识别和表名提取功能
+4. 在ConnectionServer类中添加写权限检查方法
+5. 添加dbutils-execute-write工具和处理函数
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* feat: 添加数据库写操作实现
+
+在各数据库处理器中实现写操作功能：
+1. 在SQLite处理器中添加_execute_write_query方法
+2. 在PostgreSQL处理器中添加_execute_write_query方法
+3. 在MySQL处理器中添加_execute_write_query方法
+4. 添加事务支持和错误处理
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* feat: 添加数据库写操作审计日志系统
+
+1. 创建审计日志系统，记录所有数据库写操作
+2. 添加审计日志配置和过滤功能
+3. 在ConnectionHandler.execute_write_query方法中集成审计日志
+4. 添加dbutils-get-audit-logs工具，用于查询审计日志
+5. 实现_handle_get_audit_logs方法，处理审计日志查询
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* docs: 添加数据库写操作文档和配置示例
+
+1. 添加数据库写操作功能文档，包括配置、使用方法和安全最佳实践
+2. 添加配置文件示例，包含写操作和审计日志配置
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* test: 添加数据库写操作测试用例
+
+1. 测试成功执行写操作
+2. 测试只读连接的写操作
+3. 测试没有确认的写操作
+4. 测试不支持的写操作
+5. 测试未授权表的写操作
+6. 测试未授权操作的写操作
+7. 测试获取审计日志
+* 这个功能将改变项目的核心安全模型，从只读到可配置读写，
+需要主版本号升级（从1.x.x到2.0.0）。
+
+* fix: 修复CI错误和测试问题
+
+1. 修复代码风格问题：导入排序和嵌套if语句
+2. 修复测试文件中的方法名称问题，将_handle_call_tool改为handle_call_tool
+3. 在测试类中实现新的抽象方法_execute_write_query
+
+* fix: 修复测试文件中的方法名称问题，将handle_call_tool改为_handle_call_tool
+
+* fix: 修复测试文件中的方法名称问题，将_handle_call_tool改为handle_call_tool
+
+* fix: 修复测试文件中的方法调用问题，使用正确的内部方法
+
+* fix: 修复测试文件中的方法调用问题，使用handle_call_tool替代内部方法
+
+* fix: 修复测试文件中的方法调用问题，添加handle_call_tool方法
+
+* fix: 修复测试文件中的方法调用问题，添加特殊处理CREATE TABLE语句和实现execute_write功能
+
+* fix: 修复测试文件中的表名大小写问题
+
+* fix: 修复测试文件中的数据库连接问题，使用文件数据库代替内存数据库
+
+* fix: 修复测试文件中的审计日志问题，添加log_write_operation调用
+
+* fix: 修复代码风格和安全问题，解决CI失败
+
+* fix: 修复代码风格问题，使用ruff自动修复导入顺序
+
+* test: 增加MySQL和PostgreSQL处理程序的写操作测试，提高代码覆盖率
+
+* test: 增加ConnectionServer类的写操作和审计日志测试，提高代码覆盖率
+
+* style: 修复ruff检查中的SIM117问题，使用单个with语句替代嵌套with语句
+
+* test: 修复ConnectionServer类的写操作和审计日志测试，模拟所需方法
+
+* test: 修复测试中的get_handler.called属性错误
+
+* fix: 修复正则表达式中的安全热点问题，避免潜在的回溯问题
+
+* test: 增加审计日志模块的测试，提高代码覆盖率
+
+* test: 增加base模块写操作相关方法的测试，提高代码覆盖率
+
+* style: 修复ruff检查中的导入排序和嵌套with语句问题
+
+* style: 修复ruff检查中的导入排序和嵌套with语句问题（第二次）
+
+* test: 修复base模块写操作相关方法的测试，解决测试失败问题
+
+* style: 修复ruff检查中的嵌套with语句问题
+
+* fix: 修复ConnectionServer类中的_get_sql_type和_extract_table_name方法，解决测试失败问题
+
+* fix: 修复测试中的AsyncMock问题，确保_check_write_permission方法的异步调用正确
+
+* fix: 修复_handle_execute_write方法中的_get_config_or_raise调用，确保测试通过
+
+* test: 添加SQL解析和写权限检查的测试，提高代码覆盖率
+
+* style: 修复导入排序问题
+
 ## [0.23.1](https://github.com/donghao1393/mcp-dbutils/compare/v0.23.0...v0.23.1) (2025-05-03)
 
 
