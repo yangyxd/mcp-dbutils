@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.1...v1.0.2) (2025-05-05)
+
+
+### Bug Fixes
+
+* 修复表名大小写敏感性问题 ([#95](https://github.com/donghao1393/mcp-dbutils/issues/95)) ([2986101](https://github.com/donghao1393/mcp-dbutils/commit/2986101656d3f6d8d70ee21c051e4d140c0c9eee)), closes [#92](https://github.com/donghao1393/mcp-dbutils/issues/92)
+
 ## [1.0.1](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.0...v1.0.1) (2025-05-04)
 
 
