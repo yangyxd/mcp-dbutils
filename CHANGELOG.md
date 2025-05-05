@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.2...v1.0.3) (2025-05-05)
+
+
+### Bug Fixes
+
+* 修复_extract_table_name方法处理多行SQL语句的问题 ([#98](https://github.com/donghao1393/mcp-dbutils/issues/98)) ([69eb5e1](https://github.com/donghao1393/mcp-dbutils/commit/69eb5e11e5007a5d36b09ff2bedbc1d3997815af)), closes [#97](https://github.com/donghao1393/mcp-dbutils/issues/97)
+
 ## [1.0.2](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.1...v1.0.2) (2025-05-05)
 
 
