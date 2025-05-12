@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.3...v1.0.4) (2025-05-12)
+
+
+### Bug Fixes
+
+* 修改文档中的Docker安装说明，添加获取项目代码步骤 ([#111](https://github.com/donghao1393/mcp-dbutils/issues/111)) ([e56805f](https://github.com/donghao1393/mcp-dbutils/commit/e56805fe01ae32e28c60cdeaf2458d936ee8ca15)), closes [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110) [#110](https://github.com/donghao1393/mcp-dbutils/issues/110)
+
 ## [1.0.3](https://github.com/donghao1393/mcp-dbutils/compare/v1.0.2...v1.0.3) (2025-05-05)
 
 
