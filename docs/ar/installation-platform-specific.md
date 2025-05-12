@@ -214,39 +214,30 @@ npx -y @smithery/cli install @donghao1393/mcp-dbutils --client claude
 - Docker مثبت ويعمل
 - اتصال بالإنترنت (لتنزيل صورة Docker)
 
-### استخدام صورة Docker الرسمية
+### استخدام صورة Docker
 
-1. قم بسحب صورة Docker:
+1. احصل على كود المشروع:
    ```bash
-   docker pull mcp/dbutils
+   git clone https://github.com/donghao1393/mcp-dbutils.git
+   ```
+   أو قم بتنزيل أحدث إصدار من [صفحة الإصدارات](https://github.com/donghao1393/mcp-dbutils/releases) واستخراجه
+
+2. انتقل إلى دليل المشروع:
+   ```bash
+   cd mcp-dbutils
    ```
 
-2. قم بتشغيل الحاوية مع ملف التكوين الخاص بك:
+3. قم ببناء صورة MCP Database Utilities:
    ```bash
-   docker run -i --rm -v /path/to/config.yaml:/app/config.yaml mcp/dbutils --config /app/config.yaml
+   docker build -t mcp/dbutils .
    ```
 
-### إنشاء صورة Docker مخصصة
+4. قم بتكوين تطبيق الذكاء الاصطناعي الخاص بك لاستخدام هذه الصورة (انظر [دليل التثبيت](installation.md) الخيار ب)
 
-إذا كنت بحاجة إلى تخصيص صورة Docker، يمكنك إنشاء Dockerfile الخاص بك:
-
-```dockerfile
-FROM python:3.10-slim
-
-WORKDIR /app
-
-RUN pip install --no-cache-dir mcp-dbutils
-
-ENTRYPOINT ["mcp-dbutils"]
-CMD ["--help"]
-```
-
-قم ببناء وتشغيل صورتك المخصصة:
-
-```bash
-docker build -t custom-mcp-dbutils .
-docker run -i --rm -v /path/to/config.yaml:/app/config.yaml custom-mcp-dbutils --config /app/config.yaml
-```
+> **ملاحظة**:
+> - يحتوي دليل المشروع الجذر بالفعل على Dockerfile، لذلك لا تحتاج إلى إنشاء واحد يدويًا
+> - للتحديث إلى أحدث إصدار، ستحتاج إلى الحصول على أحدث كود وإعادة بناء الصورة
+> - هذه خدمة MCP، مخصصة بشكل أساسي ليتم استدعاؤها بواسطة LLMs في تطبيقات الذكاء الاصطناعي، وليس لتشغيلها كخدمة مستقلة
 
 ## التثبيت بدون اتصال بالإنترنت
 

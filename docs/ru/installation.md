@@ -130,7 +130,25 @@ connections:
 
 Так же, как Шаг 2 в Варианте A, создайте файл `config.yaml`.
 
-### Шаг 3: Настройте ваше ИИ-приложение
+### Шаг 3: Получите код проекта и создайте Docker-образ
+
+1. Сначала получите код проекта (выберите один из следующих методов):
+   - Клонируйте проект с GitHub: `git clone https://github.com/donghao1393/mcp-dbutils.git`
+   - Или загрузите последнюю версию со [страницы Releases](https://github.com/donghao1393/mcp-dbutils/releases) и распакуйте её
+
+2. Перейдите в директорию проекта:
+   ```bash
+   cd mcp-dbutils
+   ```
+
+3. Соберите Docker-образ:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
+
+> **Примечание**: Корневая директория проекта уже содержит Dockerfile, поэтому вам не нужно создавать его вручную. Для обновления до последней версии вам потребуется получить последний код и пересобрать образ.
+
+### Шаг 4: Настройте ваше ИИ-приложение
 
 #### Настройка Claude Desktop
 
@@ -302,9 +320,16 @@ uv pip install -U mcp-dbutils
 
 ### Обновление Варианта B (Docker)
 
-```bash
-docker pull mcp/dbutils:latest
-```
+1. Получите последний код проекта:
+   ```bash
+   git pull
+   ```
+   Или загрузите последнюю версию со [страницы Releases](https://github.com/donghao1393/mcp-dbutils/releases)
+
+2. Пересоберите ваш Docker-образ:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
 
 ### Обновление Варианта C (Smithery)
 

@@ -199,49 +199,30 @@ wsl --install
 
 ## Docker Installation Guide
 
-### Using Pre-built Image
+### Using Docker Image
 
-1. Pull the MCP Database Utilities image:
+1. Get the project code:
+   ```bash
+   git clone https://github.com/donghao1393/mcp-dbutils.git
+   ```
+   Or download the latest version from the [Releases page](https://github.com/donghao1393/mcp-dbutils/releases) and extract it
 
-```bash
-docker pull mcp/dbutils
-```
+2. Navigate to the project directory:
+   ```bash
+   cd mcp-dbutils
+   ```
 
-2. Run the container:
+3. Build the MCP Database Utilities image:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
 
-```bash
-docker run -i --rm \
-  -v /path/to/config.yaml:/app/config.yaml \
-  mcp/dbutils --config /app/config.yaml
-```
+4. Configure your AI application to use this image (see [Installation Guide](installation.md) Option B)
 
-### Building a Custom Image
-
-1. Create a Dockerfile:
-
-```dockerfile
-FROM python:3.10-slim
-
-RUN pip install --no-cache-dir mcp-dbutils
-
-WORKDIR /app
-COPY config.yaml /app/config.yaml
-
-ENTRYPOINT ["mcp-dbutils"]
-CMD ["--config", "/app/config.yaml"]
-```
-
-2. Build the image:
-
-```bash
-docker build -t custom-mcp-dbutils .
-```
-
-3. Run the container:
-
-```bash
-docker run -i --rm custom-mcp-dbutils
-```
+> **Note**:
+> - The project root directory already includes a Dockerfile, so you don't need to create one manually
+> - To update to the latest version, you'll need to get the latest code and rebuild the image
+> - This is an MCP service, primarily intended to be called by LLMs in AI applications, not to be run as a standalone service
 
 ## Troubleshooting
 

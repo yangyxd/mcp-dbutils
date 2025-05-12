@@ -214,39 +214,30 @@ npx -y @smithery/cli install @donghao1393/mcp-dbutils --client claude
 - Установленный и работающий Docker
 - Подключение к интернету (для загрузки Docker-образа)
 
-### Использование официального Docker-образа
+### Использование Docker-образа
 
-1. Загрузите Docker-образ:
+1. Получите код проекта:
    ```bash
-   docker pull mcp/dbutils
+   git clone https://github.com/donghao1393/mcp-dbutils.git
+   ```
+   Или загрузите последнюю версию со [страницы Releases](https://github.com/donghao1393/mcp-dbutils/releases) и распакуйте её
+
+2. Перейдите в директорию проекта:
+   ```bash
+   cd mcp-dbutils
    ```
 
-2. Запустите контейнер с вашим файлом конфигурации:
+3. Соберите образ MCP Database Utilities:
    ```bash
-   docker run -i --rm -v /путь/к/config.yaml:/app/config.yaml mcp/dbutils --config /app/config.yaml
+   docker build -t mcp/dbutils .
    ```
 
-### Создание пользовательского Docker-образа
+4. Настройте ваше ИИ-приложение для использования этого образа (см. [Руководство по установке](installation.md) Вариант B)
 
-Если вам нужно настроить Docker-образ, вы можете создать свой собственный Dockerfile:
-
-```dockerfile
-FROM python:3.10-slim
-
-WORKDIR /app
-
-RUN pip install --no-cache-dir mcp-dbutils
-
-ENTRYPOINT ["mcp-dbutils"]
-CMD ["--help"]
-```
-
-Соберите и запустите ваш пользовательский образ:
-
-```bash
-docker build -t custom-mcp-dbutils .
-docker run -i --rm -v /путь/к/config.yaml:/app/config.yaml custom-mcp-dbutils --config /app/config.yaml
-```
+> **Примечание**:
+> - Корневая директория проекта уже содержит Dockerfile, поэтому вам не нужно создавать его вручную
+> - Для обновления до последней версии вам потребуется получить последний код и пересобрать образ
+> - Это сервис MCP, в основном предназначенный для вызова LLM в ИИ-приложениях, а не для запуска в качестве отдельного сервиса
 
 ## Офлайн-установка
 

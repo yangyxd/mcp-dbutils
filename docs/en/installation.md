@@ -133,7 +133,25 @@ If you don't have Docker installed, download and install it from [docker.com](ht
 
 Same as Step 2 in Option A, create a `config.yaml` file.
 
-### Step 3: Configure your AI application
+### Step 3: Get the project code and build the Docker image
+
+1. First, get the project code (choose one of the following methods):
+   - Clone the project from GitHub: `git clone https://github.com/donghao1393/mcp-dbutils.git`
+   - Or download the latest version from the [Releases page](https://github.com/donghao1393/mcp-dbutils/releases) and extract it
+
+2. Navigate to the project directory:
+   ```bash
+   cd mcp-dbutils
+   ```
+
+3. Build the Docker image:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
+
+> **Note**: The project root directory already includes a Dockerfile, so you don't need to create one manually. To update to the latest version, you'll need to get the latest code and rebuild the image.
+
+### Step 4: Configure your AI application
 
 #### Claude Desktop Configuration
 
@@ -305,9 +323,16 @@ uv pip install -U mcp-dbutils
 
 ### Option B (Docker) Update
 
-```bash
-docker pull mcp/dbutils:latest
-```
+1. Get the latest project code:
+   ```bash
+   git pull
+   ```
+   Or download the latest version from the [Releases page](https://github.com/donghao1393/mcp-dbutils/releases)
+
+2. Rebuild your Docker image:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
 
 ### Option C (Smithery) Update
 

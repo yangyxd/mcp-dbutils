@@ -214,39 +214,30 @@ npx -y @smithery/cli install @donghao1393/mcp-dbutils --client claude
 - Docker installé et fonctionnel
 - Connexion Internet (pour télécharger l'image Docker)
 
-### Utilisation de l'Image Docker Officielle
+### Utilisation de l'Image Docker
 
-1. Tirez l'image Docker :
+1. Obtenez le code du projet :
    ```bash
-   docker pull mcp/dbutils
+   git clone https://github.com/donghao1393/mcp-dbutils.git
+   ```
+   Ou téléchargez la dernière version depuis la [page des Releases](https://github.com/donghao1393/mcp-dbutils/releases) et extrayez-la
+
+2. Naviguez vers le répertoire du projet :
+   ```bash
+   cd mcp-dbutils
    ```
 
-2. Exécutez le conteneur avec votre fichier de configuration :
+3. Construisez l'image MCP Database Utilities :
    ```bash
-   docker run -i --rm -v /path/to/config.yaml:/app/config.yaml mcp/dbutils --config /app/config.yaml
+   docker build -t mcp/dbutils .
    ```
 
-### Création d'une Image Docker Personnalisée
+4. Configurez votre application IA pour utiliser cette image (voir [Guide d'installation](installation.md) Option B)
 
-Si vous avez besoin de personnaliser l'image Docker, vous pouvez créer votre propre Dockerfile :
-
-```dockerfile
-FROM python:3.10-slim
-
-WORKDIR /app
-
-RUN pip install --no-cache-dir mcp-dbutils
-
-ENTRYPOINT ["mcp-dbutils"]
-CMD ["--help"]
-```
-
-Construisez et exécutez votre image personnalisée :
-
-```bash
-docker build -t custom-mcp-dbutils .
-docker run -i --rm -v /path/to/config.yaml:/app/config.yaml custom-mcp-dbutils --config /app/config.yaml
-```
+> **Remarque** :
+> - Le répertoire racine du projet contient déjà un Dockerfile, vous n'avez donc pas besoin d'en créer un manuellement
+> - Pour mettre à jour vers la dernière version, vous devrez obtenir le code le plus récent et reconstruire l'image
+> - Il s'agit d'un service MCP, principalement destiné à être appelé par les LLM dans les applications IA, et non à être exécuté comme un service autonome
 
 ## Installation Hors Ligne
 

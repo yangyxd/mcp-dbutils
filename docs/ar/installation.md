@@ -132,7 +132,25 @@ connections:
 
 نفس الخطوة 2 في الخيار أ، قم بإنشاء ملف `config.yaml`.
 
-### الخطوة 3: تكوين تطبيق الذكاء الاصطناعي الخاص بك
+### الخطوة 3: الحصول على كود المشروع وبناء صورة Docker
+
+1. أولاً، احصل على كود المشروع (اختر إحدى الطرق التالية):
+   - استنساخ المشروع من GitHub: `git clone https://github.com/donghao1393/mcp-dbutils.git`
+   - أو قم بتنزيل أحدث إصدار من [صفحة الإصدارات](https://github.com/donghao1393/mcp-dbutils/releases) واستخراجه
+
+2. انتقل إلى دليل المشروع:
+   ```bash
+   cd mcp-dbutils
+   ```
+
+3. قم ببناء صورة Docker:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
+
+> **ملاحظة**: يحتوي دليل المشروع الجذر بالفعل على Dockerfile، لذلك لا تحتاج إلى إنشاء واحد يدويًا. للتحديث إلى أحدث إصدار، ستحتاج إلى الحصول على أحدث كود وإعادة بناء الصورة.
+
+### الخطوة 4: تكوين تطبيق الذكاء الاصطناعي الخاص بك
 
 #### تكوين Claude Desktop
 
@@ -304,9 +322,16 @@ uv pip install -U mcp-dbutils
 
 ### تحديث الخيار ب (Docker)
 
-```bash
-docker pull mcp/dbutils:latest
-```
+1. احصل على أحدث كود للمشروع:
+   ```bash
+   git pull
+   ```
+   أو قم بتنزيل أحدث إصدار من [صفحة الإصدارات](https://github.com/donghao1393/mcp-dbutils/releases)
+
+2. أعد بناء صورة Docker الخاصة بك:
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
 
 ### تحديث الخيار ج (Smithery)
 

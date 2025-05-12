@@ -130,7 +130,25 @@ Si vous n'avez pas Docker installé, téléchargez et installez-le depuis [docke
 
 Identique à l'Étape 2 de l'Option A, créez un fichier `config.yaml`.
 
-### Étape 3 : Configurer votre application IA
+### Étape 3 : Obtenir le code du projet et construire l'image Docker
+
+1. D'abord, obtenez le code du projet (choisissez l'une des méthodes suivantes) :
+   - Clonez le projet depuis GitHub : `git clone https://github.com/donghao1393/mcp-dbutils.git`
+   - Ou téléchargez la dernière version depuis la [page des Releases](https://github.com/donghao1393/mcp-dbutils/releases) et extrayez-la
+
+2. Naviguez vers le répertoire du projet :
+   ```bash
+   cd mcp-dbutils
+   ```
+
+3. Construisez l'image Docker :
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
+
+> **Remarque** : Le répertoire racine du projet contient déjà un Dockerfile, vous n'avez donc pas besoin d'en créer un manuellement. Pour mettre à jour vers la dernière version, vous devrez obtenir le code le plus récent et reconstruire l'image.
+
+### Étape 4 : Configurer votre application IA
 
 #### Configuration de Claude Desktop
 
@@ -302,9 +320,16 @@ uv pip install -U mcp-dbutils
 
 ### Option B (Docker) Mise à Jour
 
-```bash
-docker pull mcp/dbutils:latest
-```
+1. Obtenez le code du projet le plus récent :
+   ```bash
+   git pull
+   ```
+   Ou téléchargez la dernière version depuis la [page des Releases](https://github.com/donghao1393/mcp-dbutils/releases)
+
+2. Reconstruisez votre image Docker :
+   ```bash
+   docker build -t mcp/dbutils .
+   ```
 
 ### Option C (Smithery) Mise à Jour
 
