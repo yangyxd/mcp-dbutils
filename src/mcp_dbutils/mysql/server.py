@@ -3,7 +3,7 @@ from typing import Optional
 
 import mcp.types as types
 import mysql.connector
-from mysql.connector.pooling import MySQLConnectionPool, PooledMySQLConnection
+from mysql.connector import MySQLConnectionPool
 
 # 获取包信息用于日志命名
 from ..base import LOG_NAME, ConnectionServer
