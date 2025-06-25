@@ -52,8 +52,8 @@ class MySQLHandler(ConnectionHandler):
                 while True:
                     try:
                         MySQLHandler._instance[key] = PooledDB(creator=pymysql,  # 使用链接数据库的模块
-                                            maxconnections=200,  # 连接池允许的最大连接数
-                                            mincached=20,  # 初始化时，链接池中至少创建的空闲的链接
+                                            maxconnections=100,  # 连接池允许的最大连接数
+                                            mincached=5,  # 初始化时，链接池中至少创建的空闲的链接
                                             maxcached=5,  # 链接池中最多闲置的链接
                                             maxshared=2,  # 链接池中最多共享的链接数量
                                             blocking=True,  # 连接池中如果没有可用连接后，是否阻塞等待

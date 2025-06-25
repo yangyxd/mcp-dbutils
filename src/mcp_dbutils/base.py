@@ -518,6 +518,24 @@ class ConnectionServer:
                 self.server.session.send_log_message(level=level, data=message)
             except Exception as e:
                 self.logger("error", f"Failed to send MCP log message: {str(e)}")
+                
+    def log_debug(self, message: str, *args, **kwargs):
+        """Log debug message with optional formatting"""
+        self.send_log(LOG_LEVEL_DEBUG, message.format(*args, **kwargs))
+        
+    def log_info(self, message: str, *args, **kwargs):
+        """Log info message with optional formatting"""
+        self.send_log(LOG_LEVEL_INFO, message.format(*args, **kwargs))
+
+
+    def log_warn(self, message: str, *args, **kwargs):
+        """Log warning message with optional formatting"""
+        self.send_log(LOG_LEVEL_WARNING, message.format(*args, **kwargs))
+        
+
+    def log_error(self, message: str, *args, **kwargs):
+        """Log error message with optional formatting"""
+        self.send_log(LOG_LEVEL_ERROR, message.format(*args, **kwargs))
 
     def _setup_prompts(self):
         """Setup prompts handlers"""
@@ -734,6 +752,10 @@ class ConnectionServer:
                 from .mysql.handler import MySQLHandler
 
                 return MySQLHandler(self.config_path, connection, self.debug)
+            elif db_type == "oracle":
+                from .oracle.handler import OracleHandler
+                
+                return OracleHandler(self.config_path, connection, self.debug)
             else:
                 raise ConfigurationError(f"Unsupported database type: {db_type}")
         except ImportError as e:
